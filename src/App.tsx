@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import ClassesOverview from './components/ClassesOverview';
@@ -8,23 +9,33 @@ import Membership from './components/Membership';
 import NewsUpdates from './components/NewsUpdates';
 import Newsletter from './components/Newsletter';
 import Footer from './components/Footer';
+import Checkout from './components/Checkout';
 import { CartProvider } from './context/CartContext';
 
 function App() {
   return (
-    <CartProvider>
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <Hero />
-        <ClassesOverview />
-        <Timetable />
-        <Instructors />
-        <Membership />
-        <NewsUpdates />
-        <Newsletter />
-        <Footer />
-      </div>
-    </CartProvider>
+    <Router>
+      <CartProvider>
+        <div className="min-h-screen bg-white">
+          <Navbar />
+          <Routes>
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/" element={
+              <>
+                <Hero />
+                <ClassesOverview />
+                <Timetable />
+                <Instructors />
+                <Membership />
+                <NewsUpdates />
+                <Newsletter />
+              </>
+            } />
+          </Routes>
+          <Footer />
+        </div>
+      </CartProvider>
+    </Router>
   );
 }
 
