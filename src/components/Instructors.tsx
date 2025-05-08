@@ -14,7 +14,7 @@ const Instructors: React.FC = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {instructors.map((instructor) => (
             <div 
               key={instructor.id}
@@ -27,36 +27,17 @@ const Instructors: React.FC = () => {
                 activeInstructor === instructor.id ? null : instructor.id
               )}
             >
-              <div className="relative h-64 overflow-hidden">
-                <img 
-                  src={instructor.image} 
-                  alt={instructor.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 w-full p-4 text-white">
-                  <h3 className="text-xl font-bold">{instructor.name}</h3>
-                  <p className="text-sm opacity-90">
-                    {instructor.specialties.join(' • ')}
-                  </p>
-                </div>
-              </div>
-              
-              {activeInstructor === instructor.id && (
-                <div className="p-4 text-gray-700 animate-fadeIn">
-                  <p className="text-sm">{instructor.bio}</p>
-                </div>
-              )}
-              
-              {activeInstructor !== instructor.id && (
-                <div className="p-4 text-center">
-                  <button 
-                    className="text-teal-600 text-sm font-medium hover:text-teal-800 transition-colors"
-                  >
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">{instructor.name}</h3>
+                <p className="text-teal-600 font-medium mb-4">{instructor.specialty}</p>
+                {activeInstructor === instructor.id ? (
+                  <p className="text-gray-600">{instructor.bio}</p>
+                ) : (
+                  <button className="text-teal-600 font-medium hover:text-teal-800 transition-colors">
                     View Bio
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))}
         </div>

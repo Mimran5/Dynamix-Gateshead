@@ -1,0 +1,7 @@
+<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .letter { font: bold 24px sans-serif; fill: white; }
+  </style>
+  <rect width="32" height="32" fill="purple"/>
+  <text x="8" y="24" class="letter">D</text>
+</svg> 

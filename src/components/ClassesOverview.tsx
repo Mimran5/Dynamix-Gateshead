@@ -19,12 +19,7 @@ const ClassesOverview: React.FC = () => {
               key={type.id}
               className="bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-xl"
             >
-              <div className="h-48 overflow-hidden relative">
-                <img 
-                  src={getImageForType(type.id)}
-                  alt={type.name}
-                  className="w-full h-full object-cover"
-                />
+              <div className="h-48 overflow-hidden relative bg-gray-100">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 <div 
                   className="absolute bottom-0 left-0 w-full p-4 text-white"
@@ -53,33 +48,18 @@ const ClassesOverview: React.FC = () => {
   );
 };
 
-function getImageForType(type: string): string {
-  switch (type) {
-    case 'gymnastics':
-      return 'https://images.pexels.com/photos/8171578/pexels-photo-8171578.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
-    case 'yoga':
-      return 'https://images.pexels.com/photos/8436700/pexels-photo-8436700.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
-    case 'pilates':
-      return 'https://images.pexels.com/photos/8171687/pexels-photo-8171687.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
-    case 'fitness':
-      return 'https://images.pexels.com/photos/6456303/pexels-photo-6456303.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
-    default:
-      return 'https://images.pexels.com/photos/8171578/pexels-photo-8171578.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
-  }
-}
-
 function getDescriptionForType(type: string): string {
   switch (type) {
     case 'gymnastics':
-      return 'Build strength, flexibility, and confidence through our progressive gymnastics programs for all ages.';
+      return 'Build strength, flexibility, and coordination through our expert-led gymnastics classes.';
     case 'yoga':
-      return 'Find balance and inner peace with our range of yoga classes designed for all experience levels.';
+      return 'Find balance and inner peace with our diverse range of yoga practices.';
     case 'pilates':
-      return 'Build core strength, improve posture, and enhance body awareness with our Pilates classes.';
+      return 'Strengthen your core and improve posture with our Pilates sessions.';
     case 'fitness':
-      return 'Challenge yourself with high-energy workouts designed to build strength and endurance.';
+      return 'Boost your overall fitness with our dynamic and engaging workout classes.';
     default:
-      return 'Join our expertly designed classes for a transformative movement experience.';
+      return '';
   }
 }
 

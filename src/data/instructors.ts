@@ -1,38 +1,33 @@
 export interface Instructor {
   id: string;
   name: string;
-  image: string;
-  specialties: string[];
+  specialty: string;
   bio: string;
 }
 
 export const instructors: Instructor[] = [
   {
-    id: '1',
+    id: 'sonni-stuart',
     name: 'Sonni Stuart',
-    image: 'https://images.pexels.com/photos/5067710/pexels-photo-5067710.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    specialties: ['Gymnastics', 'Youth Training', 'Physical Development'],
-    bio: 'Sonni is a certified gymnastics instructor with extensive experience in youth development. She specializes in creating safe, engaging programs that help students build strength, flexibility, and confidence through gymnastics.'
+    specialty: 'Yoga & Meditation',
+    bio: 'Sonni is a certified yoga instructor with over 10 years of experience. She specializes in Vinyasa and Yin yoga, helping students find balance and inner peace through mindful movement and breath work.'
   },
   {
-    id: '2',
+    id: 'kainara-motta',
     name: 'Kainara Motta',
-    image: 'https://images.pexels.com/photos/8436741/pexels-photo-8436741.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    specialties: ['Yoga', 'Meditation', 'Mindfulness'],
-    bio: 'Kainara brings a wealth of experience in yoga and mindfulness practices. Her classes focus on proper alignment, breathing techniques, and creating a peaceful environment for all skill levels.'
+    specialty: 'Pilates & Core Training',
+    bio: 'Kainara is passionate about helping clients build core strength and improve posture through Pilates. Her energetic teaching style and attention to form make her classes both challenging and rewarding.'
   },
   {
-    id: '3',
+    id: 'maryna-kiselar',
     name: 'Maryna Kiselar',
-    image: 'https://images.pexels.com/photos/8171687/pexels-photo-8171687.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    specialties: ['Pilates', 'Core Training', 'Posture Improvement'],
-    bio: 'Maryna is a certified Pilates instructor with a background in physical therapy. Her knowledge of anatomy and rehabilitation makes her classes both challenging and therapeutic, with a focus on proper form and core strength.'
+    specialty: 'Gymnastics & Flexibility',
+    bio: 'With a background in competitive gymnastics, Maryna brings expertise in body control and flexibility training. She helps students of all levels develop strength, balance, and grace through movement.'
   },
   {
-    id: '4',
+    id: 'perla-ehrentreu',
     name: 'Perla Ehrentreu',
-    image: 'https://images.pexels.com/photos/6456211/pexels-photo-6456211.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    specialties: ['Kickboxing', 'Aerobics', 'High-Intensity Training'],
-    bio: 'Perla is an energetic instructor who brings enthusiasm and expertise to every class. With certifications in kickboxing and aerobics, she creates dynamic workouts that are both challenging and enjoyable.'
+    specialty: 'Strength & Conditioning',
+    bio: 'Perla is a certified personal trainer specializing in functional fitness and strength training. Her workouts focus on building practical strength and improving overall fitness for daily life.'
   }
 ];

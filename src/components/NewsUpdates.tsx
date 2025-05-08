@@ -4,7 +4,6 @@ import { Calendar, ArrowRight } from 'lucide-react';
 
 const NewsUpdates: React.FC = () => {
   const [expandedNews, setExpandedNews] = useState<string | null>(null);
-  
   const toggleExpand = (id: string) => {
     setExpandedNews(expandedNews === id ? null : id);
   };
@@ -34,16 +33,6 @@ const NewsUpdates: React.FC = () => {
               key={item.id}
               className="bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg"
             >
-              {item.image && (
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-              )}
-              
               <div className="p-6">
                 <div className="flex items-center mb-3">
                   <span 
@@ -89,30 +78,26 @@ const NewsUpdates: React.FC = () => {
 function getCategoryColor(category: string): string {
   switch (category) {
     case 'announcement':
-      return '#EFF6FF'; // blue-50
+      return '#E3F2FD';
     case 'event':
-      return '#F0FDF4'; // green-50
+      return '#E8F5E9';
     case 'promotion':
-      return '#FFF7ED'; // orange-50
-    case 'class':
-      return '#F0FDFA'; // teal-50
+      return '#FFF3E0';
     default:
-      return '#F9FAFB'; // gray-50
+      return '#F5F5F5';
   }
 }
 
 function getCategoryTextColor(category: string): string {
   switch (category) {
     case 'announcement':
-      return '#2563EB'; // blue-600
+      return '#1976D2';
     case 'event':
-      return '#16A34A'; // green-600
+      return '#2E7D32';
     case 'promotion':
-      return '#F97316'; // orange-500
-    case 'class':
-      return '#0D9488'; // teal-600
+      return '#E65100';
     default:
-      return '#4B5563'; // gray-600
+      return '#616161';
   }
 }
 
@@ -124,10 +109,8 @@ function getCategoryLabel(category: string): string {
       return 'Event';
     case 'promotion':
       return 'Promotion';
-    case 'class':
-      return 'New Class';
     default:
-      return category;
+      return 'News';
   }
 }
 
