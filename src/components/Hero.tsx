@@ -3,6 +3,13 @@ import { ArrowRight } from 'lucide-react';
 import { heroImage } from '../assets/images';
 
 const Hero: React.FC = () => {
+  const scrollToClasses = () => {
+    const classesSection = document.getElementById('classes');
+    if (classesSection) {
+      classesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative h-screen flex items-center">
       {/* Background Image with Overlay */}
@@ -44,13 +51,16 @@ const Hero: React.FC = () => {
       </div>
       
       {/* Animated scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+      <button 
+        onClick={scrollToClasses}
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 cursor-pointer hover:scale-110 transition-transform"
+      >
         <div className="animate-bounce bg-white p-2 w-10 h-10 ring-1 ring-white/20 shadow-lg rounded-full flex items-center justify-center">
           <svg className="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
           </svg>
         </div>
-      </div>
+      </button>
     </section>
   );
 };
