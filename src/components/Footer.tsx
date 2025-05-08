@@ -32,6 +32,7 @@ const Footer: React.FC = () => {
               <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Pilates</a></li>
               <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Kickboxing</a></li>
               <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Aerobics</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-teal-400 transition-colors">Karate</a></li>
             </ul>
           </div>
           
@@ -51,15 +52,15 @@ const Footer: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-start">
                 <MapPin size={18} className="mr-2 mt-1 text-teal-400" />
-                <p className="text-gray-300">123 Movement Street, Fitness City, FC 12345</p>
+                <p className="text-gray-300">Dynamix, Unit 3 Gladstone Terrace, Gateshead, NE8 4DY</p>
               </div>
               <div className="flex items-center">
                 <Phone size={18} className="mr-2 text-teal-400" />
-                <p className="text-gray-300">(123) 456-7890</p>
+                <a href="tel:07831983731" className="text-gray-300 hover:text-teal-400 transition-colors">07831 983731</a>
               </div>
               <div className="flex items-center">
                 <Mail size={18} className="mr-2 text-teal-400" />
-                <p className="text-gray-300">info@dynamix.com</p>
+                <a href="mailto:info@dynamixdga.com" className="text-gray-300 hover:text-teal-400 transition-colors">info@dynamixdga.com</a>
               </div>
             </div>
           </div>
