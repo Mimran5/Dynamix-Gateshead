@@ -146,7 +146,19 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 12,
-  }
+  },
+  {
+    id: '11',
+    name: 'High School Gymnastics',
+    type: 'gymnastics',
+    description: 'A gymnastics class for high school students focusing on advanced skills, strength, and flexibility.',
+    instructor: 'Sonni Stuart',
+    day: 'Thursday',
+    time: '19:45',
+    duration: 60,
+    level: 'All Levels',
+    capacity: 12,
+  },
 ];
 
 export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
