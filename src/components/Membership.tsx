@@ -1,77 +1,100 @@
 import React from 'react';
 import { memberships } from '../data/memberships';
-import { Check } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
 
 const Membership: React.FC = () => {
+  const { items, addToCart, removeFromCart, updateQuantity } = useCart();
+
   return (
-    <section id="membership" className="py-20">
+    <section id="membership" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Membership Plans</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Membership Options</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Choose the perfect membership plan to fit your lifestyle and wellness goals. 
-            Join our community today and transform your fitness journey.
+            Choose the perfect membership package for your fitness journey.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {memberships.map((plan) => (
-            <div 
-              key={plan.id}
-              className={`bg-white rounded-xl overflow-hidden shadow-lg border transition-transform hover:-translate-y-1 hover:shadow-xl ${
-                plan.isPopular ? 'border-teal-500' : 'border-gray-100'
-              }`}
-            >
-              {plan.isPopular && (
-                <div className="bg-teal-500 text-white text-sm font-bold py-1 text-center">
-                  MOST POPULAR
+          {memberships.map((membership) => {
+            const cartItem = items.find(item => item.membership.id === membership.id);
+            
+            return (
+              <div 
+                key={membership.id}
+                className={`bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 ${
+                  membership.isPopular ? 'ring-2 ring-teal-500' : ''
+                }`}
+              >
+                {membership.isPopular && (
+                  <div className="bg-teal-500 text-white text-center py-2 font-medium">
+                    Most Popular
+                  </div>
+                )}
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold mb-2">{membership.name}</h3>
+                  <div className="text-3xl font-bold text-teal-600 mb-4">
+                    £{membership.price}
+                    <span className="text-base font-normal text-gray-500">/month</span>
+                  </div>
+                  <ul className="space-y-3 mb-6">
+                    {membership.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-gray-600">
+                        <svg className="w-5 h-5 text-teal-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center justify-between">
+                    {cartItem ? (
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => updateQuantity(membership.id, cartItem.quantity - 1)}
+                          className="p-1 rounded-full hover:bg-gray-100"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="font-medium">{cartItem.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(membership.id, cartItem.quantity + 1)}
+                          className="p-1 rounded-full hover:bg-gray-100"
+                        >
+                          <Plus size={16} />
+                        </button>
+                        <button
+                          onClick={() => removeFromCart(membership.id)}
+                          className="p-1 rounded-full hover:bg-red-100 text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => addToCart(membership)}
+                        className="w-full bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center"
+                      >
+                        <ShoppingCart size={16} className="mr-2" />
+                        Add to Cart
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-              
-              {plan.savingsPercent && (
-                <div className="bg-orange-500 text-white text-sm font-bold py-1 text-center">
-                  SAVE {plan.savingsPercent}%
-                </div>
-              )}
-              
-              <div className="p-6">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">£{plan.price}</span>
-                  <span className="text-gray-500 ml-2">/{plan.period}</span>
-                </div>
-                
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check size={18} className="text-teal-500 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                <button 
-                  className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                    plan.isPopular 
-                      ? 'bg-teal-600 text-white hover:bg-teal-700' 
-                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                  }`}
-                >
-                  Select Plan
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-        
-        <div className="mt-12 text-center text-gray-600">
-          <p className="max-w-2xl mx-auto">
-            All memberships include access to our online booking system and free wifi.
-            Memberships can be paused once per year for up to 30 days. 
-            <a href="#" className="text-teal-600 hover:text-teal-800 font-medium ml-1">
-              View our complete terms and conditions.
-            </a>
-          </p>
+
+        {/* Contact Information */}
+        <div className="mt-16 text-center">
+          <h3 className="text-2xl font-bold mb-4">Contact Us</h3>
+          <div className="space-y-2 text-gray-600">
+            <p>Dynamix, Unit 3 Gladstone Terrace, Gateshead, NE8 4DY</p>
+            <p>Email: <a href="mailto:info@dynamixdga.com" className="text-teal-600 hover:text-teal-800">info@dynamixdga.com</a></p>
+            <p>Phone: <a href="tel:07831983731" className="text-teal-600 hover:text-teal-800">07831 983731</a></p>
+          </div>
         </div>
       </div>
     </section>

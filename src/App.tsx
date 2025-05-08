@@ -8,20 +8,23 @@ import Membership from './components/Membership';
 import NewsUpdates from './components/NewsUpdates';
 import Newsletter from './components/Newsletter';
 import Footer from './components/Footer';
+import { CartProvider } from './context/CartContext';
 
 function App() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <Hero />
-      <ClassesOverview />
-      <Timetable />
-      <Instructors />
-      <Membership />
-      <NewsUpdates />
-      <Newsletter />
-      <Footer />
-    </div>
+    <CartProvider>
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <Hero />
+        <ClassesOverview />
+        <Timetable />
+        <Instructors />
+        <Membership />
+        <NewsUpdates />
+        <Newsletter />
+        <Footer />
+      </div>
+    </CartProvider>
   );
 }
 
