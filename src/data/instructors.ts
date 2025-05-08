@@ -27,14 +27,14 @@ export const instructors: Instructor[] = [
   {
     id: 'perla-ehrentreu',
     name: 'Perla Ehrentreu',
-    specialty: 'Aerobics & Yoga',
-    bio: 'Perla is a versatile instructor specializing in both aerobics and yoga. She combines dynamic movement with mindful practice to create balanced and effective workouts.'
+    specialty: 'Aerobics',
+    bio: 'Perla is a passionate aerobics instructor who brings energy and fun to every class. Her sessions are designed to boost fitness and motivation.'
   },
   {
     id: 'kainara-motta',
     name: 'Kainara Motta',
-    specialty: 'Karate',
-    bio: 'Kainara is a skilled karate instructor with years of experience in traditional martial arts. She teaches students of all ages the fundamentals and advanced techniques of karate.'
+    specialty: 'Yoga',
+    bio: 'Kainara is a dedicated yoga instructor who helps students find balance, flexibility, and peace through mindful movement and breath.'
   },
   {
     id: 'julie-murphy',
