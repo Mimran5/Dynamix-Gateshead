@@ -7,6 +7,8 @@ const MemberAuth: React.FC = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,10 +21,20 @@ const MemberAuth: React.FC = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const fn = isSignup ? signup : login;
-    const err = await fn(email, password);
-    setLoading(false);
-    if (err) setError(err);
+    if (isSignup) {
+      if (!name.trim() || !contact.trim()) {
+        setError('Please enter your name and contact number.');
+        setLoading(false);
+        return;
+      }
+      const err = await signup(email, password, name, contact);
+      setLoading(false);
+      if (err) setError(err);
+    } else {
+      const err = await login(email, password);
+      setLoading(false);
+      if (err) setError(err);
+    }
   };
 
   return (
@@ -32,6 +44,30 @@ const MemberAuth: React.FC = () => {
           {isSignup ? 'Sign Up' : 'Member Login'}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignup && (
+            <>
+              <div>
+                <label className="block text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required={isSignup}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1">Contact Number</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+                  value={contact}
+                  onChange={e => setContact(e.target.value)}
+                  required={isSignup}
+                />
+              </div>
+            </>
+          )}
           <div>
             <label className="block text-gray-700 mb-1">Email</label>
             <input

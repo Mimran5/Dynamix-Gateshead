@@ -17,7 +17,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  signup: (email: string, password: string) => Promise<string | null>;
+  signup: (email: string, password: string, name?: string, contact?: string) => Promise<string | null>;
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
 }
@@ -56,12 +56,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string, password: string, name?: string, contact?: string) => {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       // Create user doc in Firestore with default membership using UID
       await setDoc(doc(db, 'users', cred.user.uid), {
         email,
+        name: name || '',
+        contact: contact || '',
         membershipType: 'basic',
         bookings: [],
       });
