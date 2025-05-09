@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import Cart from './Cart';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { items } = useCart();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -32,6 +35,13 @@ const Navbar: React.FC = () => {
     };
   }, []);
 
+  // Close cart when navigating to /checkout
+  React.useEffect(() => {
+    if (location.pathname === '/checkout' && isCartOpen) {
+      setIsCartOpen(false);
+    }
+  }, [location.pathname, isCartOpen]);
+
   return (
     <header 
       className={`fixed w-full z-50 transition-all duration-300 ${
@@ -50,6 +60,7 @@ const Navbar: React.FC = () => {
             <a href="#membership" className="text-gray-700 hover:text-teal-600 transition-colors">Membership</a>
             <a href="#instructors" className="text-gray-700 hover:text-teal-600 transition-colors">Instructors</a>
             <a href="#news" className="text-gray-700 hover:text-teal-600 transition-colors">News</a>
+            <a href="/member" className="text-teal-600 font-semibold hover:underline">Member Portal</a>
             <button
               onClick={toggleCart}
               className="relative p-2 text-gray-700 hover:text-teal-600 transition-colors"
@@ -79,6 +90,7 @@ const Navbar: React.FC = () => {
             <a href="#membership" className="block text-gray-700 hover:text-teal-600 transition-colors">Membership</a>
             <a href="#instructors" className="block text-gray-700 hover:text-teal-600 transition-colors">Instructors</a>
             <a href="#news" className="block text-gray-700 hover:text-teal-600 transition-colors">News</a>
+            <a href="/member" className="block text-teal-600 font-semibold hover:underline">Member Portal</a>
             <button
               onClick={toggleCart}
               className="flex items-center text-gray-700 hover:text-teal-600 transition-colors"

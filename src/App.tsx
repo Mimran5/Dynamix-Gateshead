@@ -22,9 +22,6 @@ function App() {
         <CartProvider>
           <div className="min-h-screen bg-white">
             <Navbar />
-            <div className="fixed top-4 right-4 z-50 md:top-6 md:right-8">
-              <Link to="/member" className="bg-teal-600 text-white px-4 py-2 rounded-lg shadow hover:bg-teal-700 transition-colors font-semibold">Member Portal</Link>
-            </div>
             <Routes>
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/member" element={<MemberAuth />} />
