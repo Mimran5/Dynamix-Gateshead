@@ -20,6 +20,12 @@ const MemberDashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [upgrading, setUpgrading] = useState(false);
   const [newMembership, setNewMembership] = useState('');
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editContact, setEditContact] = useState('');
+  const [notifType, setNotifType] = useState('email');
+  const [notifTime, setNotifTime] = useState('24');
+  const [savingProfile, setSavingProfile] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +38,15 @@ const MemberDashboard: React.FC = () => {
       })
       .catch(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (userDoc) {
+      setEditName(userDoc.name || '');
+      setEditContact(userDoc.contact || '');
+      setNotifType(userDoc.notifType || 'email');
+      setNotifTime(userDoc.notifTime || '24');
+    }
+  }, [userDoc]);
 
   if (!user) return null;
   if (loading) return <div className="p-8 text-center">Loading...</div>;
@@ -71,6 +86,20 @@ const MemberDashboard: React.FC = () => {
     setNewMembership('');
   };
 
+  const handleProfileSave = async () => {
+    setSavingProfile(true);
+    const ref = doc(db, 'users', user.uid);
+    await updateDoc(ref, {
+      name: editName,
+      contact: editContact,
+      notifType,
+      notifTime,
+    });
+    setUserDoc({ ...userDoc, name: editName, contact: editContact, notifType, notifTime });
+    setEditingProfile(false);
+    setSavingProfile(false);
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -83,6 +112,49 @@ const MemberDashboard: React.FC = () => {
           <div className="text-gray-600 mb-1">Classes left this month: <span className="font-semibold">{classesLeft}</span></div>
         </div>
         <button onClick={logout} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Logout</button>
+      </div>
+      <div className="mb-8">
+        <h3 className="text-xl font-bold mb-2">Profile & Notification Preferences</h3>
+        {editingProfile ? (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-gray-700 mb-1">Name</label>
+              <input type="text" className="w-full px-3 py-2 border rounded" value={editName} onChange={e => setEditName(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Contact Number</label>
+              <input type="text" className="w-full px-3 py-2 border rounded" value={editContact} onChange={e => setEditContact(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Notification Type</label>
+              <select className="w-full px-3 py-2 border rounded" value={notifType} onChange={e => setNotifType(e.target.value)}>
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Notify me before class</label>
+              <select className="w-full px-3 py-2 border rounded" value={notifTime} onChange={e => setNotifTime(e.target.value)}>
+                <option value="24">24 hours</option>
+                <option value="12">12 hours</option>
+                <option value="1">1 hour</option>
+              </select>
+            </div>
+            <div className="flex space-x-2">
+              <button onClick={handleProfileSave} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700" disabled={savingProfile}>{savingProfile ? 'Saving...' : 'Save'}</button>
+              <button onClick={() => setEditingProfile(false)} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div><span className="font-semibold">Name:</span> {userDoc.name}</div>
+            <div><span className="font-semibold">Contact:</span> {userDoc.contact}</div>
+            <div><span className="font-semibold">Notification Type:</span> {userDoc.notifType === 'both' ? 'Email & SMS' : userDoc.notifType?.toUpperCase()}</div>
+            <div><span className="font-semibold">Notify Before Class:</span> {userDoc.notifTime} hour(s)</div>
+            <button onClick={() => setEditingProfile(true)} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Edit Profile</button>
+          </div>
+        )}
       </div>
       <div className="mb-8">
         <h3 className="text-xl font-bold mb-2">Upcoming Bookings</h3>
