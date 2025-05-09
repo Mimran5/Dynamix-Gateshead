@@ -11,6 +11,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface User {
   email: string;
+  uid: string;
   membershipType?: string;
 }
 
@@ -35,13 +36,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // Fetch user data from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          setUser({ email: firebaseUser.email || '', ...userDoc.data() } as User);
-        } else {
-          setUser({ email: firebaseUser.email || '' });
+        // Fetch user data from Firestore using UID
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        let userDoc = await getDoc(userDocRef);
+        // Auto-create user doc if missing (for logins)
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            email: firebaseUser.email || '',
+            membershipType: 'basic',
+            bookings: [],
+          });
+          userDoc = await getDoc(userDocRef);
         }
+        setUser({ email: firebaseUser.email || '', uid: firebaseUser.uid, ...userDoc.data() } as User);
       } else {
         setUser(null);
       }
@@ -52,10 +59,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, password: string) => {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-      // Create user doc in Firestore with default membership
+      // Create user doc in Firestore with default membership using UID
       await setDoc(doc(db, 'users', cred.user.uid), {
         email,
-        membershipType: 'basic', // default membership
+        membershipType: 'basic',
         bookings: [],
       });
       return null;
@@ -75,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     await signOut(auth);
+    setUser(null);
   };
 
   return (
