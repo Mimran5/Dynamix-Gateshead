@@ -26,6 +26,8 @@ const MemberDashboard: React.FC = () => {
   const [notifType, setNotifType] = useState('email');
   const [notifTime, setNotifTime] = useState('24');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [directDebit, setDirectDebit] = useState(false);
+  const [recurring, setRecurring] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,6 +47,7 @@ const MemberDashboard: React.FC = () => {
       setEditContact(userDoc.contact || '');
       setNotifType(userDoc.notifType || 'email');
       setNotifTime(userDoc.notifTime || '24');
+      setDirectDebit(userDoc.directDebit || false);
     }
   }, [userDoc]);
 
@@ -66,8 +69,13 @@ const MemberDashboard: React.FC = () => {
     }
     setError('');
     const ref = doc(db, 'users', user.uid);
-    await updateDoc(ref, { bookings: [...bookings, classId] });
-    setUserDoc({ ...userDoc, bookings: [...bookings, classId] });
+    let newBookings = [...bookings, classId];
+    if (recurring && directDebit) {
+      newBookings = [...bookings, classId, classId, classId, classId];
+    }
+    await updateDoc(ref, { bookings: newBookings });
+    setUserDoc({ ...userDoc, bookings: newBookings });
+    setRecurring(false);
   };
 
   const handleCancel = async (classId: string) => {
@@ -89,13 +97,19 @@ const MemberDashboard: React.FC = () => {
   const handleProfileSave = async () => {
     setSavingProfile(true);
     const ref = doc(db, 'users', user.uid);
+    let bookings = userDoc.bookings || [];
+    if (userDoc.directDebit && !directDebit) {
+      bookings = [];
+    }
     await updateDoc(ref, {
       name: editName,
       contact: editContact,
       notifType,
       notifTime,
+      directDebit,
+      bookings,
     });
-    setUserDoc({ ...userDoc, name: editName, contact: editContact, notifType, notifTime });
+    setUserDoc({ ...userDoc, name: editName, contact: editContact, notifType, notifTime, directDebit, bookings });
     setEditingProfile(false);
     setSavingProfile(false);
   };
@@ -141,6 +155,11 @@ const MemberDashboard: React.FC = () => {
                 <option value="1">1 hour</option>
               </select>
             </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Direct Debit Active</label>
+              <input type="checkbox" checked={directDebit} onChange={e => setDirectDebit(e.target.checked)} />
+              <span className="ml-2">{directDebit ? 'Active' : 'Inactive'}</span>
+            </div>
             <div className="flex space-x-2">
               <button onClick={handleProfileSave} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700" disabled={savingProfile}>{savingProfile ? 'Saving...' : 'Save'}</button>
               <button onClick={() => setEditingProfile(false)} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
@@ -152,6 +171,7 @@ const MemberDashboard: React.FC = () => {
             <div><span className="font-semibold">Contact:</span> {userDoc.contact}</div>
             <div><span className="font-semibold">Notification Type:</span> {userDoc.notifType === 'both' ? 'Email & SMS' : userDoc.notifType?.toUpperCase()}</div>
             <div><span className="font-semibold">Notify Before Class:</span> {userDoc.notifTime} hour(s)</div>
+            <div><span className="font-semibold">Direct Debit:</span> {userDoc.directDebit ? 'Active' : 'Inactive'}</div>
             <button onClick={() => setEditingProfile(true)} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Edit Profile</button>
           </div>
         )}
@@ -183,6 +203,14 @@ const MemberDashboard: React.FC = () => {
               <div>
                 <div className="font-semibold">{c.name}</div>
                 <div className="text-sm text-gray-600">{c.day} {c.time}</div>
+                {directDebit && (
+                  <div className="mt-1">
+                    <label className="inline-flex items-center">
+                      <input type="checkbox" checked={recurring} onChange={e => setRecurring(e.target.checked)} />
+                      <span className="ml-2 text-sm">Make this a recurring booking</span>
+                    </label>
+                  </div>
+                )}
               </div>
               <button onClick={() => handleBook(c.id)} className="bg-teal-600 text-white px-3 py-1 rounded hover:bg-teal-700">Book</button>
             </li>
