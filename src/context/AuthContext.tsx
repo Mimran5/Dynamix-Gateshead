@@ -69,22 +69,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return null;
     } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        return 'This email is already registered. Please login instead.';
+      }
       return error.message;
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (!userCredential.user) {
+        return 'Login failed. Please try again.';
+      }
       return null;
     } catch (error: any) {
-      return error.message;
+      console.error('Login error:', error);
+      if (error.code === 'auth/user-not-found') {
+        return 'This email is not registered. Please sign up first.';
+      } else if (error.code === 'auth/wrong-password') {
+        return 'Incorrect password. Please try again.';
+      } else if (error.code === 'auth/invalid-email') {
+        return 'Invalid email format.';
+      } else if (error.code === 'auth/too-many-requests') {
+        return 'Too many failed attempts. Please try again later.';
+      }
+      return 'An error occurred during login. Please try again.';
     }
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
