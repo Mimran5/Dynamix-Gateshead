@@ -25,7 +25,7 @@ const MemberDashboard: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    getDoc(doc(db, 'users', user.email))
+    getDoc(doc(db, 'users', user.uid))
       .then((snap) => {
         setUserDoc(snap.exists() ? snap.data() : null);
         setLoading(false);
@@ -50,13 +50,13 @@ const MemberDashboard: React.FC = () => {
       return;
     }
     setError('');
-    const ref = doc(db, 'users', user.email);
+    const ref = doc(db, 'users', user.uid);
     await updateDoc(ref, { bookings: [...bookings, classId] });
     setUserDoc({ ...userDoc, bookings: [...bookings, classId] });
   };
 
   const handleCancel = async (classId: string) => {
-    const ref = doc(db, 'users', user.email);
+    const ref = doc(db, 'users', user.uid);
     const updated = bookings.filter((id: string) => id !== classId);
     await updateDoc(ref, { bookings: updated });
     setUserDoc({ ...userDoc, bookings: updated });
@@ -64,7 +64,7 @@ const MemberDashboard: React.FC = () => {
 
   const handleUpgrade = async () => {
     if (!newMembership) return;
-    const ref = doc(db, 'users', user.email);
+    const ref = doc(db, 'users', user.uid);
     await updateDoc(ref, { membershipType: newMembership });
     setUserDoc({ ...userDoc, membershipType: newMembership });
     setUpgrading(false);
