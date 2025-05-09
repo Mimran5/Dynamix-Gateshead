@@ -75,7 +75,10 @@ const MemberDashboard: React.FC = () => {
     <div className="max-w-3xl mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold mb-1">Welcome, {user.email}</h2>
+          <h2 className="text-2xl font-bold mb-1">Welcome, {userDoc.name || user.email}</h2>
+          {userDoc.contact && (
+            <div className="text-gray-600 mb-1">Contact: <span className="font-semibold">{userDoc.contact}</span></div>
+          )}
           <div className="text-gray-600 mb-1">Membership: <span className="font-semibold">{membership.name}</span></div>
           <div className="text-gray-600 mb-1">Classes left this month: <span className="font-semibold">{classesLeft}</span></div>
         </div>
