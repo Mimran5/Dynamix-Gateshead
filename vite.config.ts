@@ -14,8 +14,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'favicon.svg') {
-            return 'favicon.svg';
+          if (assetInfo.name === 'Favicon.png') {
+            return 'favicon.png';
           }
           if (assetInfo.name?.endsWith('.jpg') || assetInfo.name?.endsWith('.jpeg')) {
             return 'assets/[name][extname]';

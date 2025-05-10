@@ -31,7 +31,7 @@ const MemberDashboard: React.FC = () => {
   const [notifTime, setNotifTime] = useState('24');
   const [savingProfile, setSavingProfile] = useState(false);
   const [directDebit, setDirectDebit] = useState(false);
-  const [recurring, setRecurring] = useState(false);
+  const [recurringClassId, setRecurringClassId] = useState<string | null>(null);
   const [ddCancelConfirm, setDDCancelConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'membership' | 'bookings' | 'history' | 'admin'>('profile');
   const [recurringBookings, setRecurringBookings] = useState<string[]>([]);
@@ -170,7 +170,8 @@ const MemberDashboard: React.FC = () => {
     let newBookings = [...bookings, classId];
     let newRecurringBookings = [...recurringBookings];
     
-    if (recurring && directDebit) {
+    // Only add to recurring bookings if this specific class is marked as recurring
+    if (recurringClassId === classId && directDebit) {
       newRecurringBookings = [...recurringBookings, classId];
     }
     
@@ -185,14 +186,15 @@ const MemberDashboard: React.FC = () => {
       recurringBookings: newRecurringBookings
     });
     setRecurringBookings(newRecurringBookings);
-    setRecurring(false);
+    // Reset recurring state after booking
+    setRecurringClassId(null);
 
     // Add to history
     const classDetails = allClasses.find(c => c.id === classId);
     await addToHistory('booking', {
       action: 'book',
       class: classDetails,
-      recurring: recurring
+      recurring: recurringClassId === classId
     });
   };
 
@@ -619,6 +621,9 @@ const MemberDashboard: React.FC = () => {
                             <h4 className="text-xl font-medium text-gray-900">{classItem.name}</h4>
                             <p className="mt-2 text-base text-gray-500">{classItem.day} at {classItem.time}</p>
                             <p className="mt-1 text-base text-gray-500">Instructor: {classItem.instructor}</p>
+                            {recurringBookings.includes(classItem.id) && (
+                              <p className="mt-1 text-sm text-teal-600">Recurring booking</p>
+                            )}
                           </div>
                           <button
                             onClick={() => setShowCancelConfirm(classItem.id)}
@@ -642,6 +647,20 @@ const MemberDashboard: React.FC = () => {
                           <h4 className="text-xl font-medium text-gray-900">{classItem.name}</h4>
                           <p className="mt-2 text-base text-gray-500">{classItem.day} at {classItem.time}</p>
                           <p className="mt-1 text-base text-gray-500">Instructor: {classItem.instructor}</p>
+                          {directDebit && (
+                            <div className="mt-2 flex items-center">
+                              <input
+                                type="checkbox"
+                                id={`recurring-${classItem.id}`}
+                                checked={recurringClassId === classItem.id}
+                                onChange={(e) => setRecurringClassId(e.target.checked ? classItem.id : null)}
+                                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor={`recurring-${classItem.id}`} className="ml-2 text-sm text-gray-600">
+                                Book recurring
+                              </label>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => handleBook(classItem.id)}
