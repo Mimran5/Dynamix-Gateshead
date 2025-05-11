@@ -450,17 +450,17 @@ const MemberDashboard: React.FC = () => {
   });
 
   const renderNavigation = () => (
-    <div className="bg-white shadow-sm border-b border-gray-200">
+    <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex space-x-8">
+          <div className="flex space-x-4 overflow-x-auto">
             <button
               onClick={() => setActiveTab('profile')}
               className={`${
                 activeTab === 'profile'
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-              } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
             >
               Profile
             </button>
@@ -470,7 +470,7 @@ const MemberDashboard: React.FC = () => {
                 activeTab === 'notifications'
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-              } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
             >
               Notifications
             </button>
@@ -480,7 +480,7 @@ const MemberDashboard: React.FC = () => {
                 activeTab === 'membership'
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-              } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
             >
               Membership
             </button>
@@ -490,7 +490,7 @@ const MemberDashboard: React.FC = () => {
                 activeTab === 'bookings'
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-              } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
             >
               Bookings
             </button>
@@ -500,7 +500,7 @@ const MemberDashboard: React.FC = () => {
                 activeTab === 'attendance'
                   ? 'border-teal-500 text-teal-600'
                   : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-              } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+              } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
             >
               Attendance
             </button>
@@ -511,16 +511,16 @@ const MemberDashboard: React.FC = () => {
                   activeTab === 'admin'
                     ? 'border-teal-500 text-teal-600'
                     : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
               >
                 Admin
               </button>
             )}
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center ml-4">
             <button
               onClick={handleLogout}
-              className="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm"
             >
               Logout
             </button>
