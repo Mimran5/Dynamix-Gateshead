@@ -10,7 +10,8 @@ const Timetable: React.FC = () => {
   const [classAvailability, setClassAvailability] = useState<Record<string, { available: number; waitlisted: number }>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
-  const { bookClass, joinWaitlist, getClassAvailability } = useBooking();
+  const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null);
+  const { bookClass, cancelBooking, joinWaitlist, getClassAvailability } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -37,9 +38,38 @@ const Timetable: React.FC = () => {
     fetchAvailability();
   }, [getClassAvailability]);
 
+  const canBookOrCancel = (classItem: Class) => {
+    const now = new Date();
+    const classDate = new Date();
+    const [hours, minutes] = classItem.time.split(':').map(Number);
+    
+    // Set the class date to the next occurrence of the class day
+    const daysUntilClass = (days.indexOf(classItem.day) - classDate.getDay() + 7) % 7;
+    classDate.setDate(classDate.getDate() + daysUntilClass);
+    classDate.setHours(hours, minutes, 0, 0);
+
+    // Check if class is more than 24 hours away
+    const hoursUntilClass = (classDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntilClass >= 24;
+  };
+
   const handleBooking = async (classId: string) => {
     if (!user) {
       navigate('/member');
+      return;
+    }
+
+    const classItem = classes.find(c => c.id === classId);
+    if (!classItem) return;
+
+    if (!canBookOrCancel(classItem)) {
+      setError('Bookings must be made at least 24 hours before the class');
+      return;
+    }
+
+    const currentBookings = classAvailability[classId]?.available || 0;
+    if (currentBookings < 5) {
+      setError('This class requires a minimum of 5 attendees to run');
       return;
     }
 
@@ -71,46 +101,79 @@ const Timetable: React.FC = () => {
     }
   };
 
+  const handleCancel = async (classId: string) => {
+    const classItem = classes.find(c => c.id === classId);
+    if (!classItem) return;
+
+    if (!canBookOrCancel(classItem)) {
+      setError('Cancellations must be made at least 24 hours before the class');
+      setShowCancelConfirm(null);
+      return;
+    }
+
+    setLoading(prev => ({ ...prev, [classId]: true }));
+    setError(null);
+
+    try {
+      const result = await cancelBooking(classId);
+      if (result.success) {
+        const newAvailability = await getClassAvailability(classId);
+        setClassAvailability(prev => ({
+          ...prev,
+          [classId]: newAvailability
+        }));
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError('An error occurred while cancelling the class');
+    } finally {
+      setLoading(prev => ({ ...prev, [classId]: false }));
+      setShowCancelConfirm(null);
+    }
+  };
+
   const getClassTypeColor = (type: string) => {
     const classType = classTypes.find(t => t.id === type);
     return classType?.color || 'bg-gray-100';
   };
 
   return (
-    <section id="timetable" className="py-20">
+    <section id="timetable" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Weekly Class Schedule</h2>
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Class Timetable</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            View our complete weekly schedule. Filter by class type to find your perfect class.
+            Book your classes online and manage your schedule with ease.
           </p>
         </div>
-        
-        {/* Class Type Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          <button
-            onClick={() => setSelectedType('all')}
-            className={`px-4 py-2 rounded-full ${
-              selectedType === 'all'
-                ? 'bg-teal-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            All Classes
-          </button>
-          {classTypes.map((type) => (
+
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-4">
             <button
-              key={type.id}
-              onClick={() => setSelectedType(type.id)}
+              onClick={() => setSelectedType('all')}
               className={`px-4 py-2 rounded-full ${
-                selectedType === type.id
+                selectedType === 'all'
                   ? 'bg-teal-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
-              {type.name}
+              All Classes
             </button>
-          ))}
+            {classTypes.map(type => (
+              <button
+                key={type.id}
+                onClick={() => setSelectedType(type.id)}
+                className={`px-4 py-2 rounded-full ${
+                  selectedType === type.id
+                    ? 'bg-teal-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {type.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {error && (
@@ -120,7 +183,6 @@ const Timetable: React.FC = () => {
           </div>
         )}
 
-        {/* Timetable Grid */}
         <div className="overflow-x-auto">
           <div className="min-w-[1200px]">
             <div className="grid grid-cols-7 gap-4">
@@ -154,23 +216,43 @@ const Timetable: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <button
-                            onClick={() => handleBooking(classItem.id)}
-                            disabled={loading[classItem.id]}
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              classAvailability[classItem.id]?.available > 0
-                                ? 'bg-teal-600 text-white hover:bg-teal-700'
-                                : 'bg-orange-600 text-white hover:bg-orange-700'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          >
-                            {loading[classItem.id] ? (
-                              '...'
-                            ) : classAvailability[classItem.id]?.available > 0 ? (
-                              'Book'
-                            ) : (
-                              'Waitlist'
-                            )}
-                          </button>
+                          {user ? (
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleBooking(classItem.id)}
+                                disabled={loading[classItem.id] || !canBookOrCancel(classItem)}
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  classAvailability[classItem.id]?.available > 0
+                                    ? 'bg-teal-600 text-white hover:bg-teal-700'
+                                    : 'bg-orange-600 text-white hover:bg-orange-700'
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                              >
+                                {loading[classItem.id] ? (
+                                  '...'
+                                ) : classAvailability[classItem.id]?.available > 0 ? (
+                                  'Book'
+                                ) : (
+                                  'Waitlist'
+                                )}
+                              </button>
+                              {classAvailability[classItem.id]?.available === 0 && (
+                                <button
+                                  onClick={() => setShowCancelConfirm(classItem.id)}
+                                  disabled={loading[classItem.id] || !canBookOrCancel(classItem)}
+                                  className="px-2 py-1 text-xs rounded-full bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => navigate('/member')}
+                              className="px-2 py-1 text-xs rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                            >
+                              Login to Book
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -190,6 +272,32 @@ const Timetable: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Cancel Confirmation Modal */}
+        {showCancelConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Cancel Booking</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to cancel this class booking?
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => setShowCancelConfirm(null)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  No, Keep Booking
+                </button>
+                <button
+                  onClick={() => handleCancel(showCancelConfirm)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Yes, Cancel Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
