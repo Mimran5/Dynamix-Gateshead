@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { instructors } from '../data/instructors';
 
 const Instructors: React.FC = () => {
   const [activeInstructor, setActiveInstructor] = useState<string | null>(null);
-  
+  const instructorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (instructorRef.current && !instructorRef.current.contains(event.target as Node)) {
+        setActiveInstructor(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <section id="instructors" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -18,6 +32,7 @@ const Instructors: React.FC = () => {
           {instructors.map((instructor) => (
             <div 
               key={instructor.id}
+              ref={instructorRef}
               className={`bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 ${
                 activeInstructor === instructor.id 
                   ? 'ring-2 ring-teal-500 shadow-lg' 

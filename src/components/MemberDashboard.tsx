@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import memberships from '../data/memberships';
 import { classes as allClasses } from '../data/classes';
@@ -73,6 +73,7 @@ const MemberDashboard: React.FC = () => {
   });
   const [creatingUser, setCreatingUser] = useState(false);
   const navigate = useNavigate();
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = user?.email === 'yudit@dynamixdga.com';
 
@@ -134,6 +135,22 @@ const MemberDashboard: React.FC = () => {
       fetchUsers();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setShowNewUserModal(false);
+        setShowCancelConfirm(null);
+        setShowRecurringCancelConfirm(null);
+        setDDCancelConfirm(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   if (!user) {
     return null; // Don't render anything if not authenticated
@@ -893,7 +910,7 @@ const MemberDashboard: React.FC = () => {
               {/* New User Modal */}
               {showNewUserModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <div className="bg-white rounded-lg p-8 max-w-md w-full">
+                  <div ref={modalRef} className="bg-white rounded-lg p-8 max-w-md w-full">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
                     <div className="space-y-4">
                       <div>
