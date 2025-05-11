@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { classes, days, classTypes, Class, timeSlots } from '../data/classes';
+import { classes, days, classTypes, Class } from '../data/classes';
 import { Clock, Users, AlertCircle } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,20 +11,16 @@ const Timetable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { bookClass, joinWaitlist, getClassAvailability } = useBooking();
   const { user } = useAuth();
-
+  
   const filteredClasses = classes.filter(c => 
     selectedType === 'all' || c.type === selectedType
   );
 
-  // Create a grid of classes
-  const timetableGrid = timeSlots.map(time => {
-    const row: Record<string, Class | null> = {};
-    days.forEach(day => {
-      const classAtTime = filteredClasses.find(c => c.day === day && c.time === time);
-      row[day] = classAtTime || null;
-    });
-    return { time, classes: row };
-  });
+  // Group classes by day
+  const classesByDay = days.reduce((acc, day) => {
+    acc[day] = filteredClasses.filter(c => c.day === day);
+    return acc;
+  }, {} as Record<string, Class[]>);
 
   useEffect(() => {
     const fetchAvailability = async () => {
@@ -123,64 +119,60 @@ const Timetable: React.FC = () => {
         )}
 
         {/* Timetable Grid */}
-        <div className="overflow-x-auto">
-          <div className="min-w-[800px] bg-white rounded-lg shadow-md">
-            {/* Header */}
-            <div className="grid grid-cols-6 border-b">
-              <div className="p-4 font-semibold text-gray-500">Time</div>
-              {days.map(day => (
-                <div key={day} className="p-4 font-semibold text-gray-500 text-center">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Grid */}
-            {timetableGrid.map(({ time, classes: dayClasses }) => (
-              <div key={time} className="grid grid-cols-6 border-b last:border-b-0">
-                <div className="p-4 text-sm text-gray-500 border-r">
-                  {time}
-                </div>
-                {days.map(day => {
-                  const classItem = dayClasses[day];
-                  return (
-                    <div key={`${time}-${day}`} className="p-2 border-r last:border-r-0">
-                      {classItem ? (
-                        <div className={`p-3 rounded-lg ${getClassTypeColor(classItem.type)}`}>
-                          <h4 className="font-medium text-sm mb-1">{classItem.name}</h4>
-                          <p className="text-xs text-gray-600 mb-2">{classItem.instructor}</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
-                              {classAvailability[classItem.id]?.available || 0} spots
-                            </span>
-                            <button
-                              onClick={() => handleBooking(classItem.id)}
-                              disabled={loading[classItem.id]}
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                classAvailability[classItem.id]?.available > 0
-                                  ? 'bg-teal-600 text-white hover:bg-teal-700'
-                                  : 'bg-orange-600 text-white hover:bg-orange-700'
-                              } disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                              {loading[classItem.id] ? (
-                                '...'
-                              ) : classAvailability[classItem.id]?.available > 0 ? (
-                                'Book'
-                              ) : (
-                                'Waitlist'
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="h-full min-h-[100px]"></div>
-                      )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {days.map((day) => (
+            <div key={day} className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-4">{day}</h3>
+              <div className="space-y-4">
+                {classesByDay[day].map((classItem) => (
+                  <div
+                    key={classItem.id}
+                    className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)}`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">{classItem.name}</h4>
+                      <span className="text-sm text-gray-500">{classItem.level}</span>
                     </div>
-                  );
-                })}
+                    <div className="flex items-center text-gray-600 text-sm mb-2">
+                      <Clock size={16} className="mr-1" />
+                      {classItem.time} ({classItem.duration} mins)
+                    </div>
+                    <div className="flex items-center text-gray-600 text-sm mb-3">
+                      <Users size={16} className="mr-1" />
+                      {classItem.instructor}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600">
+                        {classAvailability[classItem.id]?.available || 0} spots left
+                        {classAvailability[classItem.id]?.waitlisted > 0 && (
+                          <span className="ml-2 text-orange-600">
+                            ({classAvailability[classItem.id]?.waitlisted} on waitlist)
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleBooking(classItem.id)}
+                        disabled={loading[classItem.id]}
+                        className={`px-4 py-2 rounded-full text-sm font-medium ${
+                          classAvailability[classItem.id]?.available > 0
+                            ? 'bg-teal-600 text-white hover:bg-teal-700'
+                            : 'bg-orange-600 text-white hover:bg-orange-700'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {loading[classItem.id] ? (
+                          'Processing...'
+                        ) : classAvailability[classItem.id]?.available > 0 ? (
+                          'Book Now'
+                        ) : (
+                          'Join Waitlist'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
         {/* Legend */}
