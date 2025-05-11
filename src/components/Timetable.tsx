@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { classes, days, classTypes, Class } from '../data/classes';
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, AlertCircle } from 'lucide-react';
+import { useBooking } from '../context/BookingContext';
+import { useAuth } from '../context/AuthContext';
 
 const Timetable: React.FC = () => {
   const [selectedType, setSelectedType] = useState('all');
+  const [classAvailability, setClassAvailability] = useState<Record<string, { available: number; waitlisted: number }>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null);
+  const { bookClass, joinWaitlist, getClassAvailability } = useBooking();
+  const { user } = useAuth();
   
   const filteredClasses = classes.filter(c => 
     selectedType === 'all' || c.type === selectedType
@@ -14,6 +21,54 @@ const Timetable: React.FC = () => {
     acc[day] = filteredClasses.filter(c => c.day === day);
     return acc;
   }, {} as Record<string, Class[]>);
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      const availability: Record<string, { available: number; waitlisted: number }> = {};
+      for (const classItem of classes) {
+        const result = await getClassAvailability(classItem.id);
+        availability[classItem.id] = result;
+      }
+      setClassAvailability(availability);
+    };
+
+    fetchAvailability();
+  }, [getClassAvailability]);
+
+  const handleBooking = async (classId: string) => {
+    if (!user) {
+      setError('Please log in to book a class');
+      return;
+    }
+
+    setLoading(prev => ({ ...prev, [classId]: true }));
+    setError(null);
+
+    try {
+      const result = await bookClass(classId);
+      if (!result.success && result.message.includes('waitlist')) {
+        const joinResult = await joinWaitlist(classId);
+        if (joinResult.success) {
+          setError('Class is full. You have been added to the waitlist.');
+        } else {
+          setError(joinResult.message);
+        }
+      } else if (!result.success) {
+        setError(result.message);
+      } else {
+        // Refresh availability
+        const newAvailability = await getClassAvailability(classId);
+        setClassAvailability(prev => ({
+          ...prev,
+          [classId]: newAvailability
+        }));
+      }
+    } catch (err) {
+      setError('An error occurred while booking the class');
+    } finally {
+      setLoading(prev => ({ ...prev, [classId]: false }));
+    }
+  };
 
   return (
     <section id="timetable" className="py-20">
@@ -26,100 +81,97 @@ const Timetable: React.FC = () => {
         </div>
         
         {/* Class Type Filter */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Class Type</label>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <button
+            onClick={() => setSelectedType('all')}
+            className={`px-4 py-2 rounded-full ${
+              selectedType === 'all'
+                ? 'bg-teal-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            All Classes
+          </button>
+          {classTypes.map((type) => (
             <button
-              onClick={() => setSelectedType('all')}
-              className={`py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                selectedType === 'all' 
+              key={type.id}
+              onClick={() => setSelectedType(type.id)}
+              className={`px-4 py-2 rounded-full ${
+                selectedType === type.id
                   ? 'bg-teal-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              All Classes
+              {type.name}
             </button>
-            {classTypes.map(type => (
-              <button
-                key={type.id}
-                onClick={() => setSelectedType(type.id)}
-                className={`py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                  selectedType === type.id 
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                style={selectedType === type.id ? undefined : { backgroundColor: `${type.color}15`, color: type.color }}
-              >
-                {type.name}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
-        
-        {/* Weekly Schedule */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-px bg-gray-200">
-            {days.map(day => (
-              <div key={day} className="bg-white p-4">
-                <h3 className="font-bold text-lg mb-4 text-gray-900">{day}</h3>
-                <div className="space-y-4">
-                  {classesByDay[day].length > 0 ? (
-                    classesByDay[day].map(classItem => (
-                      <ClassCard key={classItem.id} classItem={classItem} />
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No classes scheduled</p>
-                  )}
-                </div>
-              </div>
-            ))}
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center">
+            <AlertCircle className="mr-2" size={20} />
+            {error}
           </div>
+        )}
+
+        {/* Timetable Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {days.map((day) => (
+            <div key={day} className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-4">{day}</h3>
+              <div className="space-y-4">
+                {classesByDay[day].map((classItem) => (
+                  <div
+                    key={classItem.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">{classItem.name}</h4>
+                      <span className="text-sm text-gray-500">{classItem.level}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600 text-sm mb-2">
+                      <Clock size={16} className="mr-1" />
+                      {classItem.time} ({classItem.duration} mins)
+                    </div>
+                    <div className="flex items-center text-gray-600 text-sm mb-3">
+                      <Users size={16} className="mr-1" />
+                      {classItem.instructor}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600">
+                        {classAvailability[classItem.id]?.available || 0} spots left
+                        {classAvailability[classItem.id]?.waitlisted > 0 && (
+                          <span className="ml-2 text-orange-600">
+                            ({classAvailability[classItem.id]?.waitlisted} on waitlist)
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleBooking(classItem.id)}
+                        disabled={loading[classItem.id]}
+                        className={`px-4 py-2 rounded-full text-sm font-medium ${
+                          classAvailability[classItem.id]?.available > 0
+                            ? 'bg-teal-600 text-white hover:bg-teal-700'
+                            : 'bg-orange-600 text-white hover:bg-orange-700'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {loading[classItem.id] ? (
+                          'Processing...'
+                        ) : classAvailability[classItem.id]?.available > 0 ? (
+                          'Book Now'
+                        ) : (
+                          'Join Waitlist'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
-  );
-};
-
-interface ClassCardProps {
-  classItem: Class;
-}
-
-const ClassCard: React.FC<ClassCardProps> = ({ classItem }) => {
-  const classTypeObj = classTypes.find(t => t.id === classItem.type);
-  const color = classTypeObj?.color || '#0D9488';
-  
-  return (
-    <div 
-      className="bg-white rounded-lg border p-3 hover:shadow-md transition-shadow"
-      style={{ borderColor: `${color}40` }}
-    >
-      <div className="flex justify-between items-start mb-2">
-        <span 
-          className="text-xs font-semibold px-2 py-1 rounded-full"
-          style={{ backgroundColor: `${color}15`, color: color }}
-        >
-          {classTypeObj?.name}
-        </span>
-        <span className="text-sm font-medium text-gray-900">{classItem.time}</span>
-      </div>
-      
-      <h4 className="font-medium text-gray-900 mb-1">{classItem.name}</h4>
-      
-      <div className="flex items-center text-xs text-gray-500 space-x-2">
-        <div className="flex items-center">
-          <Clock size={12} className="mr-1" />
-          <span>{classItem.duration} min</span>
-        </div>
-        <div className="flex items-center">
-          <Users size={12} className="mr-1" />
-          <span>Max {classItem.capacity}</span>
-        </div>
-      </div>
-      
-      <p className="text-xs text-gray-600 mt-2">
-        <span className="font-medium">Instructor:</span> {classItem.instructor}
-      </p>
-    </div>
   );
 };
 
