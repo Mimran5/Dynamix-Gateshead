@@ -21,6 +21,15 @@ interface Class {
   attendees?: any[];
 }
 
+interface Booking {
+  classId: string;
+  className: string;
+  day: string;
+  time: string;
+  instructor: string;
+  bookedAt: string;
+}
+
 const getClassLimit = (membershipType: string) => {
   if (membershipType === 'basic') return 6;
   if (membershipType === 'standard') return 10;
@@ -774,7 +783,7 @@ const MemberDashboard: React.FC = () => {
   };
 
   const renderClassCard = (classItem: any) => {
-    const isBooked = bookings.some(b => b.classId === classItem.id);
+    const isBooked = bookings.some((b: Booking) => b.classId === classItem.id);
     const attendees = classAttendees[classItem.id] || [];
     const isFull = attendees.length >= classItem.capacity;
     const isAdmin = user?.email === 'yudit@dynamixdga.com';
@@ -801,7 +810,7 @@ const MemberDashboard: React.FC = () => {
                     onClick={() => setShowBookingForm(classItem.id)}
                     className="px-3 py-1.5 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-md"
                   >
-                    Book Class
+                    Book for Guest
                   </button>
                   <button
                     onClick={() => setShowCancelConfirm(classItem.id)}
@@ -814,7 +823,7 @@ const MemberDashboard: React.FC = () => {
                 <>
                   {!isBooked && !isFull && (
                     <button
-                      onClick={() => setShowBookingForm(classItem.id)}
+                      onClick={() => handleBookClass(classItem.id)}
                       disabled={classesLeft <= 0}
                       className={`px-3 py-1.5 text-sm font-medium rounded-md ${
                         classesLeft <= 0
@@ -1239,20 +1248,8 @@ const MemberDashboard: React.FC = () => {
                                 >
                                   Book
                                 </button>
-                                <button
-                                  onClick={() => setShowBookingForm(showBookingForm === classItem.id ? null : classItem.id)}
-                                  disabled={classesLeft <= 0}
-                                  className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-                                    classesLeft <= 0
-                                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                      : 'bg-gray-600 text-white hover:bg-gray-700'
-                                  }`}
-                                >
-                                  Book for Guest
-                                </button>
                               </div>
                             </div>
-                            {showBookingForm === classItem.id && renderBookingForm(classItem.id)}
                             {renderClassAttendees(classItem.id)}
                           </div>
                         ))}
