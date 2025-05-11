@@ -8,6 +8,16 @@ export interface Booking {
   attendanceMarkedBy?: string; // Admin ID who marked attendance
   attendanceMarkedAt?: Date;
   attendanceNotes?: string;
+  guestInfo?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  userDetails?: {
+    name: string;
+    email: string;
+    contact: string;
+  };
 }
 
 export interface WaitlistEntry {

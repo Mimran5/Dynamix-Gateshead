@@ -6,13 +6,14 @@ import { Booking, WaitlistEntry, ClassBooking } from '../data/bookings';
 import { classes } from '../data/classes';
 
 interface BookingContextType {
-  bookClass: (classId: string) => Promise<{ success: boolean; message: string }>;
+  bookClass: (classId: string, guestInfo?: { name?: string; email?: string; phone?: string }) => Promise<{ success: boolean; message: string }>;
   cancelBooking: (classId: string) => Promise<{ success: boolean; message: string }>;
   joinWaitlist: (classId: string) => Promise<{ success: boolean; message: string }>;
   leaveWaitlist: (classId: string) => Promise<{ success: boolean; message: string }>;
   getUserBookings: () => Promise<Booking[]>;
   getUserWaitlist: () => Promise<WaitlistEntry[]>;
   getClassAvailability: (classId: string) => Promise<{ available: number; waitlisted: number }>;
+  getClassAttendees: (classId: string) => Promise<Booking[]>;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -37,7 +38,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return bookingSnap.data() as ClassBooking;
   };
 
-  const bookClass = async (classId: string): Promise<{ success: boolean; message: string }> => {
+  const bookClass = async (classId: string, guestInfo?: { name?: string; email?: string; phone?: string }): Promise<{ success: boolean; message: string }> => {
     if (!user) {
       return { success: false, message: 'You must be logged in to book a class' };
     }
@@ -66,7 +67,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         userId: user.uid,
         status: 'confirmed',
         bookedAt: new Date(),
-        attended: false
+        attended: false,
+        guestInfo: guestInfo ? {
+          name: guestInfo.name,
+          email: guestInfo.email,
+          phone: guestInfo.phone
+        } : undefined
       };
 
       await setDoc(doc(db, 'bookings', booking.id), booking);
@@ -280,6 +286,43 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const getClassAttendees = async (classId: string): Promise<Booking[]> => {
+    try {
+      const bookingsRef = collection(db, 'bookings');
+      const q = query(
+        bookingsRef,
+        where('classId', '==', classId),
+        where('status', '==', 'confirmed')
+      );
+
+      const querySnapshot = await getDocs(q);
+      const bookings = querySnapshot.docs.map(doc => doc.data() as Booking);
+
+      // Get user details for each booking
+      const bookingsWithUserDetails = await Promise.all(
+        bookings.map(async (booking) => {
+          const userRef = doc(db, 'users', booking.userId);
+          const userSnap = await getDoc(userRef);
+          const userData = userSnap.exists() ? userSnap.data() : null;
+
+          return {
+            ...booking,
+            userDetails: userData ? {
+              name: userData.name,
+              email: userData.email,
+              contact: userData.contact
+            } : null
+          };
+        })
+      );
+
+      return bookingsWithUserDetails;
+    } catch (error) {
+      console.error('Error getting class attendees:', error);
+      return [];
+    }
+  };
+
   return (
     <BookingContext.Provider
       value={{
@@ -289,7 +332,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         leaveWaitlist,
         getUserBookings,
         getUserWaitlist,
-        getClassAvailability
+        getClassAvailability,
+        getClassAttendees
       }}
     >
       {children}
