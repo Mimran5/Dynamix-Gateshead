@@ -3,6 +3,7 @@ import { classes, days, classTypes, Class } from '../data/classes';
 import { Clock, Users, AlertCircle } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Timetable: React.FC = () => {
   const [selectedType, setSelectedType] = useState('all');
@@ -11,6 +12,7 @@ const Timetable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { bookClass, joinWaitlist, getClassAvailability } = useBooking();
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   const filteredClasses = classes.filter(c => 
     selectedType === 'all' || c.type === selectedType
@@ -37,7 +39,7 @@ const Timetable: React.FC = () => {
 
   const handleBooking = async (classId: string) => {
     if (!user) {
-      setError('Please log in to book a class');
+      navigate('/member');
       return;
     }
 
