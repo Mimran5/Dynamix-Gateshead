@@ -119,60 +119,64 @@ const Timetable: React.FC = () => {
         )}
 
         {/* Timetable Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {days.map((day) => (
-            <div key={day} className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold mb-4">{day}</h3>
-              <div className="space-y-4">
-                {classesByDay[day].map((classItem) => (
-                  <div
-                    key={classItem.id}
-                    className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)}`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-900">{classItem.name}</h4>
-                      <span className="text-sm text-gray-500">{classItem.level}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600 text-sm mb-2">
-                      <Clock size={16} className="mr-1" />
-                      {classItem.time} ({classItem.duration} mins)
-                    </div>
-                    <div className="flex items-center text-gray-600 text-sm mb-3">
-                      <Users size={16} className="mr-1" />
-                      {classItem.instructor}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">
-                        {classAvailability[classItem.id]?.available || 0} spots left
-                        {classAvailability[classItem.id]?.waitlisted > 0 && (
-                          <span className="ml-2 text-orange-600">
-                            ({classAvailability[classItem.id]?.waitlisted} on waitlist)
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleBooking(classItem.id)}
-                        disabled={loading[classItem.id]}
-                        className={`px-4 py-2 rounded-full text-sm font-medium ${
-                          classAvailability[classItem.id]?.available > 0
-                            ? 'bg-teal-600 text-white hover:bg-teal-700'
-                            : 'bg-orange-600 text-white hover:bg-orange-700'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+        <div className="overflow-x-auto">
+          <div className="min-w-[1200px]">
+            <div className="grid grid-cols-7 gap-4">
+              {days.map((day) => (
+                <div key={day} className="bg-white rounded-lg shadow-md p-4">
+                  <h3 className="text-lg font-bold mb-4 text-center">{day}</h3>
+                  <div className="space-y-3">
+                    {classesByDay[day].map((classItem) => (
+                      <div
+                        key={classItem.id}
+                        className={`border rounded-lg p-3 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)}`}
                       >
-                        {loading[classItem.id] ? (
-                          'Processing...'
-                        ) : classAvailability[classItem.id]?.available > 0 ? (
-                          'Book Now'
-                        ) : (
-                          'Join Waitlist'
-                        )}
-                      </button>
-                    </div>
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-medium text-sm text-gray-900">{classItem.name}</h4>
+                          <span className="text-xs text-gray-500">{classItem.level}</span>
+                        </div>
+                        <div className="flex items-center text-gray-600 text-xs mb-1">
+                          <Clock size={14} className="mr-1" />
+                          {classItem.time} ({classItem.duration} mins)
+                        </div>
+                        <div className="flex items-center text-gray-600 text-xs mb-2">
+                          <Users size={14} className="mr-1" />
+                          {classItem.instructor}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-gray-600">
+                            {classAvailability[classItem.id]?.available || 0} spots
+                            {classAvailability[classItem.id]?.waitlisted > 0 && (
+                              <span className="ml-1 text-orange-600">
+                                ({classAvailability[classItem.id]?.waitlisted})
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleBooking(classItem.id)}
+                            disabled={loading[classItem.id]}
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              classAvailability[classItem.id]?.available > 0
+                                ? 'bg-teal-600 text-white hover:bg-teal-700'
+                                : 'bg-orange-600 text-white hover:bg-orange-700'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            {loading[classItem.id] ? (
+                              '...'
+                            ) : classAvailability[classItem.id]?.available > 0 ? (
+                              'Book'
+                            ) : (
+                              'Waitlist'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Legend */}
