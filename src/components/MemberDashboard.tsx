@@ -558,7 +558,10 @@ const MemberDashboard: React.FC = () => {
         {/* Membership Tab */}
         {activeTab === 'membership' && (
           <div className="bg-white shadow rounded-lg p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Membership</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">💳 Class Packages</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Skip the drop-in fee and save with our flexible monthly packages!
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {memberships.map((plan) => (
                 <div
@@ -570,21 +573,23 @@ const MemberDashboard: React.FC = () => {
                   }`}
                 >
                   <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
-                  <p className="mt-4 text-4xl font-bold text-gray-900">£{plan.price}</p>
-                  <p className="mt-2 text-base text-gray-500">per month</p>
+                  <div className="mt-4 text-4xl font-bold text-gray-900">£{plan.price}</div>
+                  <div className="mt-2 text-base text-gray-500">per month</div>
+                  <div className="mt-2 text-sm text-gray-600">
+                    £{plan.costPerClass} per class (Save £{plan.savings}/month)
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-gray-700">
+                    {plan.usage}
+                  </div>
                   <ul className="mt-6 space-y-4">
-                    <li className="flex items-center text-base text-gray-600">
-                      <svg className="h-6 w-6 text-teal-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {getClassLimit(plan.id)} classes per month
-                    </li>
-                    <li className="flex items-center text-base text-gray-600">
-                      <svg className="h-6 w-6 text-teal-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      {plan.features}
-                    </li>
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-base text-gray-600">
+                        <svg className="h-6 w-6 text-teal-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
                   </ul>
                   {plan.id !== userDoc.membershipType && (
                     <button
@@ -599,6 +604,39 @@ const MemberDashboard: React.FC = () => {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Comparison Table */}
+            <div className="mt-16 bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="p-6">
+                <h3 className="text-2xl font-bold mb-6">📊 Compare & Save</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/month</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost per Class</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monthly Savings</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {memberships.map((plan) => (
+                        <tr key={plan.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{plan.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">£{plan.price}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.features[0].split(' ')[0]}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">£{plan.costPerClass}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">£{plan.savings}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.usage}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         )}
