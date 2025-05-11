@@ -61,10 +61,10 @@ const Navbar: React.FC = () => {
             {!isDashboard && (
               <>
                 <Link to="/" className="text-gray-700 hover:text-teal-600 transition-colors">Home</Link>
-                <Link to="/#classes" className="text-gray-700 hover:text-teal-600 transition-colors">Classes</Link>
-                <Link to="/#timetable" className="text-gray-700 hover:text-teal-600 transition-colors">Timetable</Link>
-                <Link to="/#instructors" className="text-gray-700 hover:text-teal-600 transition-colors">Instructors</Link>
-                <Link to="/#membership" className="text-gray-700 hover:text-teal-600 transition-colors">Membership</Link>
+                <Link to="/classes" className="text-gray-700 hover:text-teal-600 transition-colors">Classes</Link>
+                <Link to="/timetable" className="text-gray-700 hover:text-teal-600 transition-colors">Timetable</Link>
+                <Link to="/instructors" className="text-gray-700 hover:text-teal-600 transition-colors">Instructors</Link>
+                <Link to="/membership" className="text-gray-700 hover:text-teal-600 transition-colors">Membership</Link>
               </>
             )}
             
@@ -72,9 +72,9 @@ const Navbar: React.FC = () => {
             {isDashboard && (
               <>
                 <Link to="/dashboard" className="text-teal-600 font-medium">My Portal</Link>
-                <Link to="/dashboard#membership" className="text-gray-700 hover:text-teal-600 transition-colors">Membership</Link>
-                <Link to="/dashboard#schedule" className="text-gray-700 hover:text-teal-600 transition-colors">Class Schedule</Link>
-                <Link to="/dashboard#notifications" className="text-gray-700 hover:text-teal-600 transition-colors">Notifications</Link>
+                <Link to="/dashboard/membership" className="text-gray-700 hover:text-teal-600 transition-colors">Membership</Link>
+                <Link to="/dashboard/schedule" className="text-gray-700 hover:text-teal-600 transition-colors">Class Schedule</Link>
+                <Link to="/dashboard/notifications" className="text-gray-700 hover:text-teal-600 transition-colors">Notifications</Link>
               </>
             )}
 
@@ -165,28 +165,28 @@ const Navbar: React.FC = () => {
                   Home
                 </Link>
                 <Link
-                  to="/#classes"
+                  to="/classes"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Classes
                 </Link>
                 <Link
-                  to="/#timetable"
+                  to="/timetable"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Timetable
                 </Link>
                 <Link
-                  to="/#instructors"
+                  to="/instructors"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Instructors
                 </Link>
                 <Link
-                  to="/#membership"
+                  to="/membership"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
@@ -203,21 +203,21 @@ const Navbar: React.FC = () => {
                   My Portal
                 </Link>
                 <Link
-                  to="/dashboard#membership"
+                  to="/dashboard/membership"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Membership
                 </Link>
                 <Link
-                  to="/dashboard#schedule"
+                  to="/dashboard/schedule"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Class Schedule
                 </Link>
                 <Link
-                  to="/dashboard#notifications"
+                  to="/dashboard/notifications"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-teal-600 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
