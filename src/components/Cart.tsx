@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, X, Plus, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -10,10 +10,24 @@ interface CartProps {
 const Cart: React.FC<CartProps> = ({ onClose }) => {
   const { items, removeFromCart, updateQuantity, total } = useCart();
   const navigate = useNavigate();
+  const cartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   if (items.length === 0) {
     return (
-      <div className="fixed right-4 top-20 bg-white rounded-lg shadow-lg p-4 w-80">
+      <div ref={cartRef} className="fixed right-4 top-20 bg-white rounded-lg shadow-lg p-4 w-80">
         <div className="text-center py-8">
           <ShoppingCart size={48} className="mx-auto text-gray-400 mb-4" />
           <p className="text-gray-600">Your cart is empty</p>
@@ -23,7 +37,7 @@ const Cart: React.FC<CartProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-xl z-50">
+    <div ref={cartRef} className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-xl z-50">
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">Shopping Cart</h2>
