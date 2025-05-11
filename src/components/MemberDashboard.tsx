@@ -84,21 +84,44 @@ const MemberDashboard: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/'); // Navigate to home page after logout
+    navigate('/member', { replace: true }); // Redirect to member auth page if not logged in
   };
 
   useEffect(() => {
     if (!user) {
-      navigate('/auth'); // Redirect to auth page if not logged in
+      navigate('/member', { replace: true }); // Redirect to member auth page if not logged in
       return;
     }
     setLoading(true);
     getDoc(doc(db, 'users', user.uid))
       .then((snap) => {
-        setUserDoc(snap.exists() ? snap.data() : null);
-        setLoading(false);
+        if (!snap.exists()) {
+          // Create user document if it doesn't exist
+          const defaultUserData = {
+            email: user.email,
+            name: '',
+            contact: '',
+            membershipType: 'basic',
+            bookings: [],
+            recurringBookings: [],
+            history: [],
+            createdAt: new Date()
+          };
+          setDoc(doc(db, 'users', user.uid), defaultUserData).then(() => {
+            setUserDoc(defaultUserData);
+            setLoading(false);
+          });
+        } else {
+          const userData = snap.data();
+          setUserDoc(userData);
+          setLoading(false);
+        }
       })
-      .catch(() => setLoading(false));
+      .catch((error) => {
+        console.error('Error fetching user data:', error);
+        setError('Failed to load user data');
+        setLoading(false);
+      });
   }, [user, navigate]);
 
   useEffect(() => {
@@ -157,9 +180,9 @@ const MemberDashboard: React.FC = () => {
     };
   }, []);
 
-  const membership = memberships.find(m => m.id === userDoc.membershipType) || memberships[0];
-  const classLimit = getClassLimit(userDoc.membershipType);
-  const bookings = userDoc.bookings || [];
+  const membership = userDoc ? memberships.find(m => m.id === userDoc.membershipType) || memberships[0] : memberships[0];
+  const classLimit = userDoc ? getClassLimit(userDoc.membershipType) : 0;
+  const bookings = userDoc?.bookings || [];
   const classesLeft = classLimit - bookings.length;
   const upcoming = allClasses.filter(c => bookings.includes(c.id));
   const available = allClasses.filter(c => !bookings.includes(c.id));
@@ -192,7 +215,7 @@ const MemberDashboard: React.FC = () => {
   if (!userDoc) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-600">User data not found.</div>
+        <div className="text-xl text-red-600">User data not found. Please try logging in again.</div>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { heroImage } from '../assets/images';
+import { heroImage, logo } from '../assets/images';
 
 const Hero: React.FC = () => {
   const scrollToClasses = () => {
@@ -26,6 +26,9 @@ const Hero: React.FC = () => {
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10 text-white">
         <div className="max-w-2xl">
+          <div className="mb-8">
+            <img src={logo} alt="Dynamix" className="h-16 md:h-20" />
+          </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
             Move, <span className="text-teal-400">Transform</span>, Inspire
           </h1>
