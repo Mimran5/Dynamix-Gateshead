@@ -9,6 +9,7 @@ import AttendanceHistory from './AttendanceHistory';
 import AdminAttendance from './AdminAttendance';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
+import { useBooking } from '../context/BookingContext';
 
 const getClassLimit = (membershipType: string) => {
   if (membershipType === 'basic') return 6;
@@ -72,6 +73,10 @@ const MemberDashboard: React.FC = () => {
     notifTime: '24'
   });
   const [creatingUser, setCreatingUser] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState<string | null>(null);
+  const [guestInfo, setGuestInfo] = useState({ name: '', email: '', phone: '' });
+  const [classAttendees, setClassAttendees] = useState<Record<string, any[]>>({});
+  const { bookClass, getClassAttendees } = useBooking();
   const navigate = useNavigate();
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -152,6 +157,26 @@ const MemberDashboard: React.FC = () => {
     };
   }, []);
 
+  const membership = memberships.find(m => m.id === userDoc.membershipType) || memberships[0];
+  const classLimit = getClassLimit(userDoc.membershipType);
+  const bookings = userDoc.bookings || [];
+  const classesLeft = classLimit - bookings.length;
+  const upcoming = allClasses.filter(c => bookings.includes(c.id));
+  const available = allClasses.filter(c => !bookings.includes(c.id));
+
+  useEffect(() => {
+    const fetchClassAttendees = async () => {
+      const attendees: Record<string, any[]> = {};
+      for (const classItem of [...upcoming, ...available]) {
+        const classAttendees = await getClassAttendees(classItem.id);
+        attendees[classItem.id] = classAttendees;
+      }
+      setClassAttendees(attendees);
+    };
+
+    fetchClassAttendees();
+  }, [upcoming, available, getClassAttendees]);
+
   if (!user) {
     return null; // Don't render anything if not authenticated
   }
@@ -172,13 +197,6 @@ const MemberDashboard: React.FC = () => {
     );
   }
 
-  const membership = memberships.find(m => m.id === userDoc.membershipType) || memberships[0];
-  const classLimit = getClassLimit(userDoc.membershipType);
-  const bookings = userDoc.bookings || [];
-  const classesLeft = classLimit - bookings.length;
-  const upcoming = allClasses.filter(c => bookings.includes(c.id));
-  const available = allClasses.filter(c => !bookings.includes(c.id));
-
   const addToHistory = async (type: 'booking' | 'membership' | 'payment' | 'directDebit', details: any) => {
     const newHistoryItem = {
       type,
@@ -198,36 +216,54 @@ const MemberDashboard: React.FC = () => {
       return;
     }
     setError('');
-    const ref = doc(db, 'users', user.uid);
-    let newBookings = [...bookings, classId];
-    let newRecurringBookings = [...recurringBookings];
     
-    // Only add to recurring bookings if this specific class is marked as recurring
-    if (recurringClassId === classId && directDebit) {
-      newRecurringBookings = [...recurringBookings, classId];
-    }
-    
-    await updateDoc(ref, { 
-      bookings: newBookings,
-      recurringBookings: newRecurringBookings
-    });
-    
-    setUserDoc({ 
-      ...userDoc, 
-      bookings: newBookings,
-      recurringBookings: newRecurringBookings
-    });
-    setRecurringBookings(newRecurringBookings);
-    // Reset recurring state after booking
-    setRecurringClassId(null);
+    try {
+      const result = await bookClass(classId, showBookingForm === classId ? guestInfo : undefined);
+      if (result.success) {
+        const ref = doc(db, 'users', user.uid);
+        let newBookings = [...bookings, classId];
+        let newRecurringBookings = [...recurringBookings];
+        
+        if (recurringClassId === classId && directDebit) {
+          newRecurringBookings = [...recurringBookings, classId];
+        }
+        
+        await updateDoc(ref, { 
+          bookings: newBookings,
+          recurringBookings: newRecurringBookings
+        });
+        
+        setUserDoc({ 
+          ...userDoc, 
+          bookings: newBookings,
+          recurringBookings: newRecurringBookings
+        });
+        setRecurringBookings(newRecurringBookings);
+        setRecurringClassId(null);
+        setShowBookingForm(null);
+        setGuestInfo({ name: '', email: '', phone: '' });
 
-    // Add to history
-    const classDetails = allClasses.find(c => c.id === classId);
-    await addToHistory('booking', {
-      action: 'book',
-      class: classDetails,
-      recurring: recurringClassId === classId
-    });
+        // Add to history
+        const classDetails = allClasses.find(c => c.id === classId);
+        await addToHistory('booking', {
+          action: 'book',
+          class: classDetails,
+          recurring: recurringClassId === classId,
+          guestInfo: showBookingForm === classId ? guestInfo : undefined
+        });
+
+        // Update class attendees
+        const attendees = await getClassAttendees(classId);
+        setClassAttendees(prev => ({
+          ...prev,
+          [classId]: attendees
+        }));
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError('An error occurred while booking the class');
+    }
   };
 
   const handleCancel = async (classId: string) => {
@@ -547,6 +583,82 @@ const MemberDashboard: React.FC = () => {
     </div>
   );
 
+  const renderBookingForm = (classId: string) => (
+    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+      <h4 className="text-sm font-medium text-gray-700 mb-3">Book for someone else</h4>
+      <div className="space-y-3">
+        <input
+          type="text"
+          placeholder="Name (optional)"
+          value={guestInfo.name}
+          onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+        />
+        <input
+          type="email"
+          placeholder="Email (optional)"
+          value={guestInfo.email}
+          onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+        />
+        <input
+          type="tel"
+          placeholder="Phone (optional)"
+          value={guestInfo.phone}
+          onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+        />
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handleBook(classId)}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-md"
+          >
+            Book
+          </button>
+          <button
+            onClick={() => {
+              setShowBookingForm(null);
+              setGuestInfo({ name: '', email: '', phone: '' });
+            }}
+            className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderClassAttendees = (classId: string) => {
+    const attendees = classAttendees[classId] || [];
+    return (
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <h4 className="text-sm font-medium text-gray-700 mb-3">Class Attendees</h4>
+        {attendees.length === 0 ? (
+          <p className="text-sm text-gray-500">No attendees yet</p>
+        ) : (
+          <div className="space-y-2">
+            {attendees.map((booking) => (
+              <div key={booking.id} className="flex items-center justify-between text-sm">
+                <div>
+                  <span className="font-medium">
+                    {booking.guestInfo?.name || booking.userDetails?.name || 'Anonymous'}
+                  </span>
+                  {booking.guestInfo?.email && (
+                    <span className="text-gray-500 ml-2">({booking.guestInfo.email})</span>
+                  )}
+                </div>
+                <span className="text-gray-500">
+                  {new Date(booking.bookedAt).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {renderNavigation()}
@@ -768,6 +880,7 @@ const MemberDashboard: React.FC = () => {
                               Cancel
                             </button>
                           </div>
+                          {renderClassAttendees(classItem.id)}
                         </div>
                       ))}
                     </div>
@@ -798,18 +911,33 @@ const MemberDashboard: React.FC = () => {
                               </div>
                             )}
                           </div>
-                          <button
-                            onClick={() => handleBook(classItem.id)}
-                            disabled={classesLeft <= 0}
-                            className={`ml-4 px-3 py-1.5 text-sm font-medium rounded-md ${
-                              classesLeft <= 0
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-teal-600 text-white hover:bg-teal-700'
-                            }`}
-                          >
-                            Book
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleBook(classItem.id)}
+                              disabled={classesLeft <= 0}
+                              className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                                classesLeft <= 0
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-teal-600 text-white hover:bg-teal-700'
+                              }`}
+                            >
+                              Book
+                            </button>
+                            <button
+                              onClick={() => setShowBookingForm(showBookingForm === classItem.id ? null : classItem.id)}
+                              disabled={classesLeft <= 0}
+                              className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                                classesLeft <= 0
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : 'bg-gray-600 text-white hover:bg-gray-700'
+                              }`}
+                            >
+                              Book for Guest
+                            </button>
+                          </div>
                         </div>
+                        {showBookingForm === classItem.id && renderBookingForm(classItem.id)}
+                        {renderClassAttendees(classItem.id)}
                       </div>
                     ))}
                   </div>
