@@ -144,6 +144,19 @@ const Timetable: React.FC = () => {
     return classType?.color || 'bg-gray-100';
   };
 
+  const getClassStatusColor = (classId: string) => {
+    const totalBookings = (classAvailability[classId]?.available || 0) + 
+                         (classAvailability[classId]?.waitlisted || 0);
+    
+    if (totalBookings >= 5) {
+      return 'border-green-500 bg-green-50'; // Confirmed class
+    } else if (classAvailability[classId]?.available === 0) {
+      return 'border-orange-500 bg-orange-50'; // Full class with waitlist
+    } else {
+      return 'border-blue-500 bg-blue-50'; // Available class
+    }
+  };
+
   return (
     <section id="timetable" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -207,7 +220,7 @@ const Timetable: React.FC = () => {
                       return (
                         <div
                           key={classItem.id}
-                          className={`border rounded-lg p-3 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)}`}
+                          className={`border-2 rounded-lg p-3 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
                         >
                           <div className="flex justify-between items-start mb-1">
                             <h4 className="font-medium text-sm text-gray-900">{classItem.name}</h4>
@@ -279,13 +292,32 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          {classTypes.map(type => (
-            <div key={type.id} className="flex items-center">
-              <div className={`w-4 h-4 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
-              <span className="text-sm text-gray-600">{type.name}</span>
+        <div className="mt-8">
+          <h4 className="text-sm font-medium text-gray-700 mb-4 text-center">Class Status</h4>
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-green-50 border-2 border-green-500 mr-2"></div>
+              <span className="text-sm text-gray-600">Confirmed Class (5+ bookings)</span>
             </div>
-          ))}
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-blue-50 border-2 border-blue-500 mr-2"></div>
+              <span className="text-sm text-gray-600">Available Spots</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-orange-50 border-2 border-orange-500 mr-2"></div>
+              <span className="text-sm text-gray-600">Full (Waitlist Available)</span>
+            </div>
+          </div>
+
+          <h4 className="text-sm font-medium text-gray-700 mb-4 text-center">Class Types</h4>
+          <div className="flex flex-wrap justify-center gap-4">
+            {classTypes.map(type => (
+              <div key={type.id} className="flex items-center">
+                <div className={`w-4 h-4 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
+                <span className="text-sm text-gray-600">{type.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Cancel Confirmation Modal */}
