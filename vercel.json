@@ -14,6 +14,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "domains": ["dynamixgateshead.com", "www.dynamixgateshead.com"]
+  ]
 } 
