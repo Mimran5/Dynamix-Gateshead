@@ -46,12 +46,31 @@ const App: React.FC = () => {
                     <Newsletter />
                   </>
                 } />
+                <Route path="/classes" element={<ClassesOverview />} />
+                <Route path="/timetable" element={<Timetable />} />
+                <Route path="/instructors" element={<Instructors />} />
+                <Route path="/membership" element={<Membership />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
 
                 {/* Auth Routes */}
                 <Route path="/member" element={<MemberAuth />} />
                 <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <MemberDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/membership" element={
+                  <ProtectedRoute>
+                    <MemberDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/schedule" element={
+                  <ProtectedRoute>
+                    <MemberDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/notifications" element={
                   <ProtectedRoute>
                     <MemberDashboard />
                   </ProtectedRoute>
