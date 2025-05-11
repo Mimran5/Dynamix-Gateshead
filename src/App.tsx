@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { BookingProvider } from './context/BookingContext';
@@ -18,10 +18,27 @@ import Checkout from './components/Checkout';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  if (!user) {
-    return <Navigate to="/member" replace />;
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/member', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
   }
+
+  if (!user) {
+    return null;
+  }
+
   return <>{children}</>;
 };
 
@@ -50,27 +67,12 @@ const App: React.FC = () => {
                 <Route path="/timetable" element={<Timetable />} />
                 <Route path="/instructors" element={<Instructors />} />
                 <Route path="/membership" element={<Membership />} />
-                <Route path="/cart" element={<Cart />} />
+                <Route path="/cart" element={<Cart onClose={() => {}} />} />
                 <Route path="/checkout" element={<Checkout />} />
 
                 {/* Auth Routes */}
                 <Route path="/member" element={<MemberAuth />} />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <MemberDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/membership" element={
-                  <ProtectedRoute>
-                    <MemberDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/schedule" element={
-                  <ProtectedRoute>
-                    <MemberDashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/notifications" element={
+                <Route path="/dashboard/*" element={
                   <ProtectedRoute>
                     <MemberDashboard />
                   </ProtectedRoute>
