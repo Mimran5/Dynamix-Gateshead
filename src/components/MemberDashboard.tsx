@@ -10,6 +10,8 @@ import AdminAttendance from './AdminAttendance';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useBooking } from '../context/BookingContext';
+import { createCustomer, createSubscription } from '../services/subscriptionService';
+import StripeProvider from './StripeProvider';
 
 interface Class {
   id: string;
@@ -45,7 +47,7 @@ const MemberDashboard: React.FC = () => {
   const [upgrading, setUpgrading] = useState(false);
   const [newMembership, setNewMembership] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [pendingChange, setPendingChange] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -104,6 +106,7 @@ const MemberDashboard: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [showEditClassModal, setShowEditClassModal] = useState(false);
+  const [clientSecret, setClientSecret] = useState('');
 
   const isAdmin = user?.email === 'yudit@dynamixdga.com';
 
@@ -134,7 +137,7 @@ const MemberDashboard: React.FC = () => {
           };
           setDoc(doc(db, 'users', user.uid), defaultUserData).then(() => {
             setUserDoc(defaultUserData);
-            setLoading(false);
+        setLoading(false);
           });
         } else {
           const userData = snap.data();
@@ -359,69 +362,77 @@ const MemberDashboard: React.FC = () => {
     
     if (!newPlan || !currentPlan) return;
 
-    // If upgrading, show payment modal
-    if (newPlan.price > currentPlan.price) {
-      setShowPaymentModal(true);
-      return;
+    setProcessing(true);
+    try {
+      // Create or get customer
+      const { customerId } = await createCustomer(user.email || '', user.email?.split('@')[0] || '');
+      const priceId = getPriceIdForMembership(newMembership);
+      const { clientSecret, subscriptionId } = await createSubscription(customerId, priceId);
+      
+      // If upgrading, show payment modal with Stripe
+      if (newPlan.price > currentPlan.price) {
+        setShowPaymentModal(true);
+        setClientSecret(clientSecret);
+        return;
+      }
+
+      // If downgrading, set pending change
+      const ref = doc(db, 'users', user.uid);
+      await updateDoc(ref, { 
+        membershipType: newMembership,
+        pendingChange: true,
+        changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      });
+      setUserDoc({ 
+        ...userDoc, 
+        membershipType: newMembership,
+        pendingChange: true,
+        changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      });
+      setUpgrading(false);
+      setNewMembership('');
+      setPendingChange(true);
+
+      // Add to history
+      await addToHistory('membership', {
+        action: 'downgrade',
+        from: currentPlan,
+        to: newPlan,
+        effectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      });
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setProcessing(false);
     }
-
-    // If downgrading, set pending change
-    const ref = doc(db, 'users', user.uid);
-    await updateDoc(ref, { 
-      membershipType: newMembership,
-      pendingChange: true,
-      changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    });
-    setUserDoc({ 
-      ...userDoc, 
-      membershipType: newMembership,
-      pendingChange: true,
-      changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    });
-    setUpgrading(false);
-    setNewMembership('');
-    setPendingChange(true);
-
-    // Add to history
-    await addToHistory('membership', {
-      action: 'downgrade',
-      from: currentPlan,
-      to: newPlan,
-      effectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    });
   };
 
-  const handlePayment = async () => {
-    setProcessingPayment(true);
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const ref = doc(db, 'users', user.uid);
-    await updateDoc(ref, { 
-      membershipType: newMembership,
-      pendingChange: false
-    });
-    setUserDoc({ 
-      ...userDoc, 
-      membershipType: newMembership,
-      pendingChange: false
-    });
-    
-    setProcessingPayment(false);
-    setShowPaymentModal(false);
-    setUpgrading(false);
-    setNewMembership('');
-    setPaymentSuccess(true);
+  const handlePurchaseForOthers = async (membershipId: string) => {
+    if (!user) return;
 
-    // Add to history
-    const newPlan = memberships.find(m => m.id === newMembership);
-    const currentPlan = memberships.find(m => m.id === userDoc.membershipType);
-    await addToHistory('payment', {
-      action: 'upgrade',
-      from: currentPlan,
-      to: newPlan,
-      amount: newPlan?.price
-    });
+    setProcessing(true);
+    try {
+      // Create or get customer
+      const { customerId } = await createCustomer(user.email || '', user.email?.split('@')[0] || '');
+      const priceId = getPriceIdForMembership(membershipId);
+      const { clientSecret } = await createSubscription(customerId, priceId);
+      
+      setClientSecret(clientSecret);
+      setShowPaymentModal(true);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const getPriceIdForMembership = (membershipId: string): string => {
+    const priceMap: { [key: string]: string } = {
+      'basic': 'price_1QxYtXKZvIloP2hXKZvIloP2',
+      'standard': 'price_1QxYtXKZvIloP2hXKZvIloP3',
+      'family': 'price_1QxYtXKZvIloP2hXKZvIloP4'
+    };
+    return priceMap[membershipId] || '';
   };
 
   const handleProfileSave = async () => {
@@ -585,29 +596,29 @@ const MemberDashboard: React.FC = () => {
           <div className="flex space-x-4 overflow-x-auto">
             {isAdmin ? (
               <>
-                <button
+            <button
                   onClick={() => setActiveTab('admin')}
-                  className={`${
+              className={`${
                     activeTab === 'admin'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Admin Dashboard
-                </button>
-                <button
+            </button>
+            <button
                   onClick={() => setActiveTab('bookings')}
-                  className={`${
+              className={`${
                     activeTab === 'bookings'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Class Management
-                </button>
-                <button
+            </button>
+            <button
                   onClick={() => setActiveTab('attendance')}
-                  className={`${
+              className={`${
                     activeTab === 'attendance'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
@@ -627,37 +638,37 @@ const MemberDashboard: React.FC = () => {
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Profile
-                </button>
-                <button
-                  onClick={() => setActiveTab('notifications')}
-                  className={`${
-                    activeTab === 'notifications'
+            </button>
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className={`${
+                activeTab === 'notifications'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
-                >
-                  Notifications
-                </button>
-                <button
+            >
+              Notifications
+            </button>
+            <button
                   onClick={() => setActiveTab('membership')}
-                  className={`${
+              className={`${
                     activeTab === 'membership'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Membership
-                </button>
-                <button
+            </button>
+              <button
                   onClick={() => setActiveTab('bookings')}
-                  className={`${
+                className={`${
                     activeTab === 'bookings'
                       ? 'border-teal-500 text-teal-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Bookings
-                </button>
+              </button>
                 <button
                   onClick={() => setActiveTab('attendance')}
                   className={`${
@@ -678,9 +689,9 @@ const MemberDashboard: React.FC = () => {
             >
               Logout
             </button>
-          </div>
         </div>
-      </nav>
+      </div>
+    </nav>
     </div>
   );
 
@@ -898,8 +909,8 @@ const MemberDashboard: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
+          </div>
+        )}
               {activeTab === 'bookings' && (
                 <div className="bg-white shadow rounded-lg p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Class Management</h2>
@@ -989,90 +1000,90 @@ const MemberDashboard: React.FC = () => {
           ) : (
             // Regular User View
             <>
-              {activeTab === 'profile' && (
-                <div className="bg-white shadow rounded-lg p-8">
+        {activeTab === 'profile' && (
+          <div className="bg-white shadow rounded-lg p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-8">My Portal</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-medium text-gray-900 mb-6">Profile Information</h3>
+                {editingProfile ? (
+                  <div className="space-y-6">
                     <div>
-                      <h3 className="text-xl font-medium text-gray-900 mb-6">Profile Information</h3>
-                      {editingProfile ? (
-                        <div className="space-y-6">
-                          <div>
                             <label className="block text-sm font-medium text-gray-700">Name</label>
-                            <input
-                              type="text"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
                               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Contact</label>
-                            <input
-                              type="text"
-                              value={editContact}
-                              onChange={(e) => setEditContact(e.target.value)}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                            />
-                          </div>
-                          <div className="flex space-x-4">
-                            <button
-                              onClick={handleProfileSave}
-                              disabled={savingProfile}
-                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
-                            >
-                              {savingProfile ? 'Saving...' : 'Save Changes'}
-                            </button>
-                            <button
-                              onClick={() => setEditingProfile(false)}
-                              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-6">
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Name</p>
-                            <p className="mt-1 text-base text-gray-900">{userDoc.name}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Email</p>
-                            <p className="mt-1 text-base text-gray-900">{userDoc.email}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Contact</p>
-                            <p className="mt-1 text-base text-gray-900">{userDoc.contact}</p>
-                          </div>
-                          <button
-                            onClick={() => setEditingProfile(true)}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                          >
-                            Edit Profile
-                          </button>
-                        </div>
-                      )}
+                      />
                     </div>
                     <div>
-                      <h3 className="text-xl font-medium text-gray-900 mb-6">Membership Status</h3>
-                      <div className="bg-gray-50 rounded-lg p-6">
+                            <label className="block text-sm font-medium text-gray-700">Contact</label>
+                      <input
+                        type="text"
+                        value={editContact}
+                        onChange={(e) => setEditContact(e.target.value)}
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                      />
+                    </div>
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={handleProfileSave}
+                        disabled={savingProfile}
+                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                      >
+                        {savingProfile ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button
+                        onClick={() => setEditingProfile(false)}
+                              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div>
+                            <p className="text-sm font-medium text-gray-500">Name</p>
+                            <p className="mt-1 text-base text-gray-900">{userDoc.name}</p>
+                    </div>
+                    <div>
+                            <p className="text-sm font-medium text-gray-500">Email</p>
+                            <p className="mt-1 text-base text-gray-900">{userDoc.email}</p>
+                    </div>
+                    <div>
+                            <p className="text-sm font-medium text-gray-500">Contact</p>
+                            <p className="mt-1 text-base text-gray-900">{userDoc.contact}</p>
+                    </div>
+                    <button
+                      onClick={() => setEditingProfile(true)}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                    >
+                      Edit Profile
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xl font-medium text-gray-900 mb-6">Membership Status</h3>
+                <div className="bg-gray-50 rounded-lg p-6">
                         <p className="text-sm font-medium text-gray-500">Current Plan</p>
                         <p className="mt-1 text-2xl font-semibold text-gray-900">{membership.name}</p>
                         <p className="mt-4 text-sm font-medium text-gray-500">Classes Remaining</p>
                         <p className="mt-1 text-2xl font-semibold text-gray-900">{classesLeft} of {classLimit}</p>
-                        {pendingChange && (
-                          <div className="mt-6 p-4 bg-yellow-50 rounded-md">
+                  {pendingChange && (
+                    <div className="mt-6 p-4 bg-yellow-50 rounded-md">
                             <p className="text-sm text-yellow-700">
-                              Your membership change will be effective on {userDoc.changeEffectiveDate.toDate().toLocaleDateString()}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                        Your membership change will be effective on {userDoc.changeEffectiveDate.toDate().toLocaleDateString()}
+                      </p>
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+        )}
               {activeTab === 'notifications' && (
                 <div className="bg-white shadow rounded-lg p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-8">Notification Settings</h2>
@@ -1124,148 +1135,162 @@ const MemberDashboard: React.FC = () => {
                   </div>
                 </div>
               )}
-              {activeTab === 'membership' && (
-                <div className="bg-white shadow rounded-lg p-8">
+        {activeTab === 'membership' && (
+          <div className="bg-white shadow rounded-lg p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Packages</h2>
                   <p className="text-base text-gray-600 mb-8">
-                    Skip the drop-in fee and save with our flexible monthly packages!
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {memberships.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className={`border rounded-lg p-6 flex flex-col justify-between h-full ${
-                          plan.id === userDoc.membershipType
-                            ? 'border-teal-500 bg-teal-50'
-                            : 'border-gray-200'
-                        }`}
-                      >
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
-                          <div className="mt-4 text-3xl font-bold text-gray-900">£{plan.price}</div>
-                          <div className="mt-1 text-sm text-gray-500">per month</div>
-                          <div className="mt-2 text-sm text-gray-600">
-                            £{plan.costPerClass} per class (Save £{plan.savings}/month)
-                          </div>
-                          <div className="mt-2 text-sm font-medium text-gray-700">
-                            {plan.usage}
-                          </div>
-                          <ul className="mt-6 space-y-3">
-                            {plan.features.map((feature, index) => (
-                              <li key={index} className="flex items-start text-sm text-gray-600">
-                                <svg className="h-5 w-5 text-teal-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        {plan.id !== userDoc.membershipType && (
-                          <button
-                            onClick={() => {
-                              setNewMembership(plan.id);
-                              setUpgrading(true);
-                            }}
-                            className="mt-6 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                          >
-                            {plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
-                          </button>
-                        )}
-                      </div>
-                    ))}
+              Skip the drop-in fee and save with our flexible monthly packages!
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {memberships.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`border rounded-lg p-6 flex flex-col justify-between h-full ${
+                    plan.id === userDoc.membershipType
+                      ? 'border-teal-500 bg-teal-50'
+                      : 'border-gray-200'
+                  }`}
+                >
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
+                    <div className="mt-4 text-3xl font-bold text-gray-900">£{plan.price}</div>
+                    <div className="mt-1 text-sm text-gray-500">per month</div>
+                    <div className="mt-2 text-sm text-gray-600">
+                      £{plan.costPerClass} per class (Save £{plan.savings}/month)
+                    </div>
+                    <div className="mt-2 text-sm font-medium text-gray-700">
+                      {plan.usage}
+                    </div>
+                    <ul className="mt-6 space-y-3">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start text-sm text-gray-600">
+                          <svg className="h-5 w-5 text-teal-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6 space-y-3">
+                    {plan.id === userDoc.membershipType ? (
+                      <div className="text-sm text-teal-600 font-medium">Current Plan</div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            setNewMembership(plan.id);
+                            setUpgrading(true);
+                          }}
+                          disabled={processing}
+                          className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                        >
+                          {plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
+                        </button>
+                        <button
+                          onClick={() => handlePurchaseForOthers(plan.id)}
+                          disabled={processing}
+                          className="w-full inline-flex items-center justify-center px-4 py-2 border border-teal-600 text-sm font-medium rounded-md text-teal-600 bg-white hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                        >
+                          Purchase for Others
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-              )}
-              {activeTab === 'bookings' && (
-                <div className="bg-white shadow rounded-lg p-8">
+              ))}
+            </div>
+          </div>
+        )}
+        {activeTab === 'bookings' && (
+          <div className="bg-white shadow rounded-lg p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Schedule</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                      <h3 className="text-xl font-medium text-gray-900 mb-6">Upcoming Classes</h3>
-                      {upcoming.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-medium text-gray-900 mb-6">Upcoming Classes</h3>
+                {upcoming.length === 0 ? (
                         <p className="text-sm text-gray-500">No upcoming classes booked.</p>
-                      ) : (
+                ) : (
                         <div className="space-y-4">
-                          {upcoming.map((classItem) => (
+                    {upcoming.map((classItem) => (
                             <div key={classItem.id} className="border rounded-lg p-4 bg-white">
-                              <div className="flex justify-between items-start">
-                                <div>
+                        <div className="flex justify-between items-start">
+                          <div>
                                   <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
                                   <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
                                   <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
-                                  {recurringBookings.includes(classItem.id) && (
-                                    <p className="mt-1 text-sm text-teal-600">Recurring booking</p>
-                                  )}
-                                </div>
-                                <button
-                                  onClick={() => setShowCancelConfirm(classItem.id)}
+                            {recurringBookings.includes(classItem.id) && (
+                              <p className="mt-1 text-sm text-teal-600">Recurring booking</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => setShowCancelConfirm(classItem.id)}
                                   className="ml-4 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                              {renderClassAttendees(classItem.id)}
-                            </div>
-                          ))}
+                          >
+                            Cancel
+                          </button>
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-medium text-gray-900 mb-6">Available Classes</h3>
+                              {renderClassAttendees(classItem.id)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-xl font-medium text-gray-900 mb-6">Available Classes</h3>
                       <div className="space-y-4">
-                        {available.map((classItem) => (
+                  {available.map((classItem) => (
                           <div key={classItem.id} className="border rounded-lg p-4 bg-white">
-                            <div className="flex justify-between items-start">
-                              <div>
+                      <div className="flex justify-between items-start">
+                        <div>
                                 <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
                                 <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
                                 <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
-                                {directDebit && (
-                                  <div className="mt-2 flex items-center">
-                                    <input
-                                      type="checkbox"
-                                      id={`recurring-${classItem.id}`}
-                                      checked={recurringClassId === classItem.id}
-                                      onChange={(e) => setRecurringClassId(e.target.checked ? classItem.id : null)}
-                                      className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-                                    />
-                                    <label htmlFor={`recurring-${classItem.id}`} className="ml-2 text-sm text-gray-600">
-                                      Book recurring
-                                    </label>
-                                  </div>
-                                )}
-                              </div>
+                          {directDebit && (
+                            <div className="mt-2 flex items-center">
+                              <input
+                                type="checkbox"
+                                id={`recurring-${classItem.id}`}
+                                checked={recurringClassId === classItem.id}
+                                onChange={(e) => setRecurringClassId(e.target.checked ? classItem.id : null)}
+                                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor={`recurring-${classItem.id}`} className="ml-2 text-sm text-gray-600">
+                                Book recurring
+                              </label>
+                            </div>
+                          )}
+                        </div>
                               <div className="flex space-x-2">
-                                <button
+                        <button
                                   onClick={() => handleBookClass(classItem.id)}
-                                  disabled={classesLeft <= 0}
+                          disabled={classesLeft <= 0}
                                   className={`px-3 py-1.5 text-sm font-medium rounded-md ${
-                                    classesLeft <= 0
-                                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                      : 'bg-teal-600 text-white hover:bg-teal-700'
-                                  }`}
-                                >
-                                  Book
-                                </button>
-                              </div>
+                            classesLeft <= 0
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-teal-600 text-white hover:bg-teal-700'
+                          }`}
+                        >
+                          Book
+                        </button>
+                      </div>
                             </div>
                             {renderClassAttendees(classItem.id)}
-                          </div>
-                        ))}
-                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+        )}
               {activeTab === 'attendance' && (
                 <div className="bg-white shadow rounded-lg p-6">
                   <AttendanceHistory />
-                </div>
-              )}
+          </div>
+        )}
             </>
-          )}
-        </main>
+        )}
+      </main>
       </div>
     </div>
   );

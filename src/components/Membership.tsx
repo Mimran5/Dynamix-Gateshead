@@ -1,10 +1,104 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { memberships } from '../data/memberships';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Plus, Minus, Trash2, CreditCard } from 'lucide-react';
+import StripeProvider from './StripeProvider';
+import { useAuth } from '../context/AuthContext';
+import { createCustomer, createSubscription } from '../services/subscriptionService';
+import { User } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Membership: React.FC = () => {
   const { items, addToCart, removeFromCart, updateQuantity } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [selectedMembership, setSelectedMembership] = useState<string | null>(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [userMembership, setUserMembership] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserMembership = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUserMembership(userDoc.data());
+          }
+        } catch (error) {
+          console.error('Error fetching user membership:', error);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchUserMembership();
+  }, [user]);
+
+  const handlePaymentSuccess = async () => {
+    setPaymentSuccess(true);
+    setShowPaymentForm(false);
+    setClientSecret(null);
+    if (selectedMembership) {
+      const membership = memberships.find(m => m.id === selectedMembership);
+      if (membership) {
+        addToCart(membership);
+      }
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    setPaymentError(error);
+    setClientSecret(null);
+  };
+
+  const handleMembershipSelect = async (membershipId: string) => {
+    if (!user) {
+      navigate('/member');
+      return;
+    }
+
+    setProcessing(true);
+    setSelectedMembership(membershipId);
+    setPaymentSuccess(false);
+    setPaymentError(null);
+    setClientSecret(null);
+
+    try {
+      const { customerId } = await createCustomer(user.email || '', user.email?.split('@')[0] || '');
+      const priceId = getPriceIdForMembership(membershipId);
+      const { clientSecret: secret } = await createSubscription(customerId, priceId);
+      setClientSecret(secret);
+      setShowPaymentForm(true);
+    } catch (error: any) {
+      setPaymentError(error.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const getPriceIdForMembership = (membershipId: string): string => {
+    const priceMap: { [key: string]: string } = {
+      'basic': 'price_1QxYtXKZvIloP2hXKZvIloP2',
+      'standard': 'price_1QxYtXKZvIloP2hXKZvIloP3',
+      'family': 'price_1QxYtXKZvIloP2hXKZvIloP4'
+    };
+    return priceMap[membershipId] || '';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <section id="membership" className="py-20 bg-gray-50">
@@ -19,20 +113,48 @@ const Membership: React.FC = () => {
           </p>
         </div>
 
+        {showPaymentForm && selectedMembership && clientSecret && (
+          <div className="max-w-md mx-auto mb-8">
+            <StripeProvider
+              amount={(memberships.find(m => m.id === selectedMembership)?.price || 0) * 100}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              clientSecret={clientSecret}
+            />
+            {paymentError && (
+              <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                {paymentError}
+              </div>
+            )}
+          </div>
+        )}
+
+        {paymentSuccess && (
+          <div className="max-w-md mx-auto mb-8 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            Payment successful! Your membership has been activated.
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {memberships.map((membership) => {
             const cartItem = items.find(item => item.membership.id === membership.id);
+            const isCurrentMembership = userMembership?.membershipType === membership.id;
             
             return (
               <div 
                 key={membership.id}
                 className={`bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 ${
                   membership.isPopular ? 'ring-2 ring-teal-500' : ''
-                }`}
+                } ${isCurrentMembership ? 'border-2 border-teal-500' : ''}`}
               >
                 {membership.isPopular && (
                   <div className="bg-teal-500 text-white text-center py-2 font-medium">
                     Most Popular
+                  </div>
+                )}
+                {isCurrentMembership && (
+                  <div className="bg-teal-100 text-teal-800 text-center py-2 font-medium">
+                    Current Plan
                   </div>
                 )}
                 <div className="p-6">
@@ -82,11 +204,17 @@ const Membership: React.FC = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={() => addToCart(membership)}
-                        className="w-full bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center"
+                        onClick={() => handleMembershipSelect(membership.id)}
+                        className={`w-full ${
+                          isCurrentMembership
+                            ? 'bg-teal-100 text-teal-800 hover:bg-teal-200'
+                            : 'bg-teal-600 text-white hover:bg-teal-700'
+                        } py-2 px-4 rounded-lg transition-colors flex items-center justify-center`}
                       >
                         <CreditCard size={16} className="mr-2" />
-                        Add to Cart
+                        {!user ? 'Sign in to Purchase' : 
+                          isCurrentMembership ? 'Current Plan' : 
+                          'Purchase Now'}
                       </button>
                     )}
                   </div>
