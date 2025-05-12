@@ -16,6 +16,7 @@ import MemberDashboard from './components/MemberDashboard';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import { useAuth } from './context/AuthContext';
+import ResetPassword from './components/ResetPassword';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -77,6 +78,9 @@ const App: React.FC = () => {
                     <MemberDashboard />
                   </ProtectedRoute>
                 } />
+
+                {/* Reset Password Route */}
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 {/* Catch all route */}
                 <Route path="*" element={<Navigate to="/" replace />} />

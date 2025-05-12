@@ -1,246 +1,184 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import ForgotPassword from './ForgotPassword';
 
 const MemberAuth: React.FC = () => {
-  const { signup, login, user } = useAuth();
-  const [isSignup, setIsSignup] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const { signup, login, sendVerificationEmail } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password.');
-      setLoading(false);
-      return;
-    }
-
     try {
-      if (isSignup) {
-        if (!name.trim() || !contact.trim()) {
-          setError('Please enter your name and contact number.');
-          setLoading(false);
-          return;
-        }
-        if (password !== confirmPassword) {
-          setError('Passwords do not match.');
-          setLoading(false);
-          return;
-        }
-        if (password.length < 6) {
-          setError('Password must be at least 6 characters long.');
-          setLoading(false);
-          return;
-        }
-        
-        const signupError = await signup(email, password, name, contact);
-        if (signupError) {
-          setError(signupError);
-          setLoading(false);
-          return;
-        }
-
-        setIsSignup(false);
-        setPassword('');
-        setConfirmPassword('');
-        setName('');
-        setContact('');
-        setError('Account created successfully! Please login with your password.');
+      if (isLogin) {
+        await login(email, password);
+        navigate('/member/dashboard');
       } else {
-        const loginError = await login(email, password);
-        if (loginError) {
-          setError(loginError);
-          setLoading(false);
-          return;
-        }
+        await signup(email, password);
+        setVerificationSent(true);
       }
     } catch (err: any) {
-      console.error('Auth error:', err);
-      if (err.code === 'auth/user-not-found') {
-        setError('This email is not registered. Please sign up first.');
-      } else if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password. Please try again.');
-      } else if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please login instead.');
-        setIsSignup(false);
-      } else {
-        setError(err.message || 'An error occurred during authentication.');
-      }
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      setError('Please enter your email address first.');
-      return;
-    }
-
+  const handleResendVerification = async () => {
     try {
-      setLoading(true);
-      await sendPasswordResetEmail(auth, email);
-      setResetSent(true);
-      setError('Password reset link has been sent to your email.');
+      await sendVerificationEmail();
+      setVerificationSent(true);
     } catch (err: any) {
-      console.error('Password reset error:', err);
-      if (err.code === 'auth/user-not-found') {
-        setError('This email is not registered. Please sign up first.');
-      } else {
-        setError('Failed to send reset email. Please try again.');
-      }
-    } finally {
-      setLoading(false);
+      setError(err.message);
     }
   };
 
-  const switchMode = (mode: 'signup' | 'login') => {
-    setIsSignup(mode === 'signup');
-    setError('');
-    setPassword('');
-    setConfirmPassword('');
-    setName('');
-    setContact('');
-    setResetSent(false);
-  };
+  if (showForgotPassword) {
+    return <ForgotPassword />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+      <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSignup ? 'Create your account' : 'Sign in to your account'}
+            {isLogin ? 'Sign in to your account' : 'Create your account'}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {isSignup ? 'Join Dynamix Gateshead' : 'Welcome back'}
-          </p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignup && (
-            <>
-              <div>
-                <label className="block text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  required={isSignup}
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-1">Contact Number</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
-                  value={contact}
-                  onChange={e => setContact(e.target.value)}
-                  required={isSignup}
-                />
-              </div>
-            </>
+          {verificationSent && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-green-600">
+                Verification email sent! Please check your inbox.
+              </p>
+              <button
+                onClick={handleResendVerification}
+                className="mt-2 text-sm text-teal-600 hover:text-teal-500"
+              >
+                Resend verification email
+              </button>
+            </div>
           )}
-          <div>
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {isSignup && (
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            {!isLogin && (
+              <>
+                <div>
+                  <label htmlFor="name" className="sr-only">
+                    Full Name
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="contact" className="sr-only">
+                    Contact Number
+                  </label>
+                  <input
+                    id="contact"
+                    name="contact"
+                    type="tel"
+                    required
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                    placeholder="Contact Number"
+                  />
+                </div>
+              </>
+            )}
             <div>
-              <label className="block text-gray-700 mb-1">Confirm Password</label>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
               <input
-                type="password"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                required={isSignup}
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
               />
             </div>
-          )}
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+              />
+            </div>
+          </div>
+
           {error && (
-            <div className={`text-sm p-3 rounded-lg border ${
-              error.includes('successfully') || error.includes('reset link')
-                ? 'text-green-600 bg-green-50 border-green-200' 
-                : 'text-red-600 bg-red-50 border-red-200'
-            }`}>
-              {error}
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
-          <button
-            type="submit"
-            className="w-full bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? 'Please wait...' : isSignup ? 'Sign Up' : 'Login'}
-          </button>
-          {!isSignup && (
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="font-medium text-teal-600 hover:text-teal-500"
+              >
+                {isLogin ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
+              </button>
+            </div>
+            {isLogin && (
+              <div className="text-sm">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="font-medium text-teal-600 hover:text-teal-500"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
             <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="w-full text-teal-600 hover:text-teal-700 text-sm font-medium mt-2"
+              type="submit"
               disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
             >
-              Forgot your password?
+              {loading ? 'Processing...' : isLogin ? 'Sign in' : 'Sign up'}
             </button>
-          )}
+          </div>
         </form>
-        <div className="text-center mt-4">
-          {isSignup ? (
-            <span>
-              Already have an account?{' '}
-              <button 
-                className="text-teal-600 hover:underline" 
-                onClick={() => switchMode('login')}
-              >
-                Login
-              </button>
-            </span>
-          ) : (
-            <span>
-              New here?{' '}
-              <button 
-                className="text-teal-600 hover:underline" 
-                onClick={() => switchMode('signup')}
-              >
-                Sign Up
-              </button>
-            </span>
-          )}
-        </div>
       </div>
     </div>
   );
