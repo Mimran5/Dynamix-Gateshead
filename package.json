@@ -1,7 +1,11 @@
 {
-  "name": "dynamix-frontend",
+  "name": "dynamix-gateshead",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    ".",
+    "server"
+  ],
   "dependencies": {
     "@stripe/react-stripe-js": "^2.1.0",
     "@stripe/stripe-js": "^1.54.0",
@@ -23,7 +27,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server:dev": "cd server && npm run dev",
+    "server:build": "cd server && npm run build"
   },
   "browserslist": {
     "production": [
