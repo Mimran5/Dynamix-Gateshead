@@ -9,8 +9,10 @@ export default defineConfig({
   },
   publicDir: 'public',
   build: {
+    outDir: 'dist',
     copyPublicDir: true,
     assetsDir: 'assets',
+    sourcemap: true,
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
