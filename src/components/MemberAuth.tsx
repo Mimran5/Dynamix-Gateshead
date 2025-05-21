@@ -31,6 +31,9 @@ const MemberAuth: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.message);
+      if (err.message.includes('already registered')) {
+        setError('This email is already registered. Please try logging in or use the forgot password option.');
+      }
     } finally {
       setLoading(false);
     }
@@ -40,6 +43,7 @@ const MemberAuth: React.FC = () => {
     try {
       await sendVerificationEmail();
       setVerificationSent(true);
+      setError('');
     } catch (err: any) {
       setError(err.message);
     }
@@ -143,6 +147,24 @@ const MemberAuth: React.FC = () => {
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{error}</div>
+              {error.includes('already registered') && (
+                <div className="mt-2 flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsLogin(true)}
+                    className="text-sm text-teal-600 hover:text-teal-500"
+                  >
+                    Try logging in
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-teal-600 hover:text-teal-500"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
