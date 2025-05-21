@@ -140,9 +140,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendVerificationEmail = async () => {
     try {
       setError(null);
-      if (user) {
-        await sendEmailVerification(user);
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error('No user found. Please try logging in first.');
       }
+      await sendEmailVerification(currentUser);
     } catch (err: any) {
       setError(err.message);
       throw err;
