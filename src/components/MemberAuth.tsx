@@ -41,11 +41,18 @@ const MemberAuth: React.FC = () => {
 
   const handleResendVerification = async () => {
     try {
+      setError('');
+      if (!email) {
+        setError('Please enter your email address first');
+        return;
+      }
       await sendVerificationEmail();
       setVerificationSent(true);
-      setError('');
     } catch (err: any) {
       setError(err.message);
+      if (err.message.includes('No user found')) {
+        setError('Please try logging in first, then request a new verification email');
+      }
     }
   };
 
