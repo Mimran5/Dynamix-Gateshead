@@ -173,7 +173,7 @@ export const classes: Class[] = [
   },
 ];
 
-export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Sunday'];
 
 export const timeSlots = [
   '17:00', '17:30', '17:45', '18:00', '18:15', '18:30', '18:45', '19:00',
