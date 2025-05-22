@@ -203,12 +203,12 @@ const Timetable: React.FC = () => {
         )}
 
         <div className="overflow-x-auto rounded-2xl shadow-xl">
-          <div className="min-w-[1200px] bg-white p-6">
-            <div className="grid grid-cols-7 gap-6">
+          <div className="min-w-[1000px] bg-white p-6">
+            <div className="grid grid-cols-5 gap-8">
               {days.map((day) => (
-                <div key={day} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
-                  <h3 className="text-lg font-bold mb-6 text-center text-gray-800 border-b pb-3">{day}</h3>
-                  <div className="space-y-4">
+                <div key={day} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
+                  <h3 className="text-xl font-bold mb-6 text-center text-gray-800 border-b pb-3">{day}</h3>
+                  <div className="space-y-5">
                     {classesByDay[day].map((classItem) => {
                       const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
                                           (classAvailability[classItem.id]?.waitlisted || 0);
@@ -219,18 +219,18 @@ const Timetable: React.FC = () => {
                       return (
                         <div
                           key={classItem.id}
-                          className={`border-2 rounded-xl p-4 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
+                          className={`border-2 rounded-xl p-5 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold text-gray-900">{classItem.name}</h4>
+                          <div className="flex justify-between items-start mb-3">
+                            <h4 className="font-semibold text-gray-900 text-base">{classItem.name}</h4>
                             <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 text-gray-700">{classItem.level}</span>
                           </div>
                           <div className="flex items-center text-gray-600 text-sm mb-2">
-                            <Clock size={16} className="mr-2 text-teal-600" />
+                            <Clock size={18} className="mr-2 text-teal-600" />
                             {classItem.time} ({classItem.duration} mins)
                           </div>
-                          <div className="flex items-center text-gray-600 text-sm mb-3">
-                            <Users size={16} className="mr-2 text-teal-600" />
+                          <div className="flex items-center text-gray-600 text-sm mb-4">
+                            <Users size={18} className="mr-2 text-teal-600" />
                             {classItem.instructor}
                           </div>
                           <div className="flex items-center justify-between">
@@ -247,7 +247,7 @@ const Timetable: React.FC = () => {
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 transform hover:scale-105 ${
+                                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 transform hover:scale-105 ${
                                     classAvailability[classItem.id]?.available > 0
                                       ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md'
                                       : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md'
@@ -265,7 +265,7 @@ const Timetable: React.FC = () => {
                                   <button
                                     onClick={() => setShowCancelConfirm(classItem.id)}
                                     disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                    className="px-3 py-1.5 text-sm font-medium rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     Cancel
                                   </button>
@@ -274,7 +274,7 @@ const Timetable: React.FC = () => {
                             ) : (
                               <button
                                 onClick={() => navigate('/member')}
-                                className="px-3 py-1.5 text-sm font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105"
+                                className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105"
                               >
                                 Login to Book
                               </button>
