@@ -158,23 +158,23 @@ const Timetable: React.FC = () => {
   };
 
   return (
-    <section id="timetable" className="py-20 bg-gray-50">
+    <section id="timetable" className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Class Timetable</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">Class Timetable</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Book your classes online and manage your schedule with ease.
           </p>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-12">
           <div className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => setSelectedType('all')}
-              className={`px-4 py-2 rounded-full ${
+              className={`px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 ${
                 selectedType === 'all'
-                  ? 'bg-teal-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
               }`}
             >
               All Classes
@@ -183,10 +183,10 @@ const Timetable: React.FC = () => {
               <button
                 key={type.id}
                 onClick={() => setSelectedType(type.id)}
-                className={`px-4 py-2 rounded-full ${
+                className={`px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 ${
                   selectedType === type.id
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
                 }`}
               >
                 {type.name}
@@ -196,21 +196,20 @@ const Timetable: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center">
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center animate-fade-in">
             <AlertCircle className="mr-2" size={20} />
             {error}
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[1200px]">
-            <div className="grid grid-cols-7 gap-4">
+        <div className="overflow-x-auto rounded-2xl shadow-xl">
+          <div className="min-w-[1200px] bg-white p-6">
+            <div className="grid grid-cols-7 gap-6">
               {days.map((day) => (
-                <div key={day} className="bg-white rounded-lg shadow-md p-4">
-                  <h3 className="text-lg font-bold mb-4 text-center">{day}</h3>
-                  <div className="space-y-3">
+                <div key={day} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+                  <h3 className="text-lg font-bold mb-6 text-center text-gray-800 border-b pb-3">{day}</h3>
+                  <div className="space-y-4">
                     {classesByDay[day].map((classItem) => {
-                      // Only show classes that are confirmed (5+ bookings) or have available spots
                       const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
                                           (classAvailability[classItem.id]?.waitlisted || 0);
                       if (totalBookings < 5 && classAvailability[classItem.id]?.available === 0) {
@@ -220,23 +219,23 @@ const Timetable: React.FC = () => {
                       return (
                         <div
                           key={classItem.id}
-                          className={`border-2 rounded-lg p-3 hover:shadow-md transition-shadow ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
+                          className={`border-2 rounded-xl p-4 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
                         >
-                          <div className="flex justify-between items-start mb-1">
-                            <h4 className="font-medium text-sm text-gray-900">{classItem.name}</h4>
-                            <span className="text-xs text-gray-500">{classItem.level}</span>
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-gray-900">{classItem.name}</h4>
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 text-gray-700">{classItem.level}</span>
                           </div>
-                          <div className="flex items-center text-gray-600 text-xs mb-1">
-                            <Clock size={14} className="mr-1" />
+                          <div className="flex items-center text-gray-600 text-sm mb-2">
+                            <Clock size={16} className="mr-2 text-teal-600" />
                             {classItem.time} ({classItem.duration} mins)
                           </div>
-                          <div className="flex items-center text-gray-600 text-xs mb-2">
-                            <Users size={14} className="mr-1" />
+                          <div className="flex items-center text-gray-600 text-sm mb-3">
+                            <Users size={16} className="mr-2 text-teal-600" />
                             {classItem.instructor}
                           </div>
                           <div className="flex items-center justify-between">
-                            <div className="text-xs text-gray-600">
-                              {classAvailability[classItem.id]?.available || 0} spots
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium">{classAvailability[classItem.id]?.available || 0}</span> spots
                               {classAvailability[classItem.id]?.waitlisted > 0 && (
                                 <span className="ml-1 text-orange-600">
                                   ({classAvailability[classItem.id]?.waitlisted})
@@ -248,10 +247,10 @@ const Timetable: React.FC = () => {
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-2 py-1 text-xs rounded-full ${
+                                  className={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 transform hover:scale-105 ${
                                     classAvailability[classItem.id]?.available > 0
-                                      ? 'bg-teal-600 text-white hover:bg-teal-700'
-                                      : 'bg-orange-600 text-white hover:bg-orange-700'
+                                      ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md'
+                                      : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md'
                                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                   {loading[classItem.id] ? (
@@ -266,7 +265,7 @@ const Timetable: React.FC = () => {
                                   <button
                                     onClick={() => setShowCancelConfirm(classItem.id)}
                                     disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                    className="px-2 py-1 text-xs rounded-full bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 py-1.5 text-sm font-medium rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     Cancel
                                   </button>
@@ -275,7 +274,7 @@ const Timetable: React.FC = () => {
                             ) : (
                               <button
                                 onClick={() => navigate('/member')}
-                                className="px-2 py-1 text-xs rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                                className="px-3 py-1.5 text-sm font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105"
                               >
                                 Login to Book
                               </button>
@@ -292,29 +291,29 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-8">
-          <h4 className="text-sm font-medium text-gray-700 mb-4 text-center">Class Status</h4>
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
+        <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
+          <h4 className="text-lg font-semibold text-gray-800 mb-6 text-center">Class Status</h4>
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded-full bg-green-50 border-2 border-green-500 mr-2"></div>
-              <span className="text-sm text-gray-600">Confirmed Class (5+ bookings)</span>
+              <div className="w-5 h-5 rounded-full bg-green-50 border-2 border-green-500 mr-3"></div>
+              <span className="text-sm text-gray-700">Confirmed Class (5+ bookings)</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded-full bg-blue-50 border-2 border-blue-500 mr-2"></div>
-              <span className="text-sm text-gray-600">Available Spots</span>
+              <div className="w-5 h-5 rounded-full bg-blue-50 border-2 border-blue-500 mr-3"></div>
+              <span className="text-sm text-gray-700">Available Spots</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded-full bg-orange-50 border-2 border-orange-500 mr-2"></div>
-              <span className="text-sm text-gray-600">Full (Waitlist Available)</span>
+              <div className="w-5 h-5 rounded-full bg-orange-50 border-2 border-orange-500 mr-3"></div>
+              <span className="text-sm text-gray-700">Full (Waitlist Available)</span>
             </div>
           </div>
 
-          <h4 className="text-sm font-medium text-gray-700 mb-4 text-center">Class Types</h4>
-          <div className="flex flex-wrap justify-center gap-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-6 text-center">Class Types</h4>
+          <div className="flex flex-wrap justify-center gap-6">
             {classTypes.map(type => (
               <div key={type.id} className="flex items-center">
-                <div className={`w-4 h-4 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
-                <span className="text-sm text-gray-600">{type.name}</span>
+                <div className={`w-5 h-5 rounded-full ${getClassTypeColor(type.id)} mr-3`}></div>
+                <span className="text-sm text-gray-700">{type.name}</span>
               </div>
             ))}
           </div>
