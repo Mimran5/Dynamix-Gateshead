@@ -104,7 +104,7 @@ const Membership: React.FC = () => {
     <section id="membership" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">💳 Class Packages</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Class Packages</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Skip the drop-in fee and save with our flexible monthly packages!
           </p>
@@ -227,7 +227,7 @@ const Membership: React.FC = () => {
         {/* Comparison Table */}
         <div className="mt-16 bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="p-6">
-            <h3 className="text-2xl font-bold mb-6">📊 Compare & Save</h3>
+            <h3 className="text-2xl font-bold mb-6">Compare & Save</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
