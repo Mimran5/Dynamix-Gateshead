@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import Cart from './Cart';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { logo } from '../assets/images';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -52,7 +53,7 @@ const Navbar: React.FC = () => {
           {/* Logo and Brand */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-teal-600">Dynamix</span>
+              <img src={logo} alt="Dynamix" className="h-8 md:h-10" />
             </Link>
           </div>
 

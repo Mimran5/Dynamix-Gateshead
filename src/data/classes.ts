@@ -24,6 +24,7 @@ export interface Class {
   duration: number; // in minutes
   level: 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels';
   capacity: number;
+  waitlist: boolean;
 }
 
 export const classes: Class[] = [
@@ -38,6 +39,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 0,
+    waitlist: true,
   },
   {
     id: '2',
@@ -50,6 +52,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '3',
@@ -62,6 +65,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'Advanced',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '12',
@@ -74,6 +78,7 @@ export const classes: Class[] = [
     duration: 45,
     level: 'Beginner',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '4',
@@ -86,6 +91,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '13',
@@ -98,6 +104,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '5',
@@ -110,6 +117,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 0,
+    waitlist: true,
   },
   {
     id: '6',
@@ -122,6 +130,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'Advanced',
     capacity: 0,
+    waitlist: true,
   },
   {
     id: '7',
@@ -134,6 +143,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 0,
+    waitlist: true,
   },
   {
     id: '8',
@@ -146,6 +156,7 @@ export const classes: Class[] = [
     duration: 45,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '9',
@@ -158,6 +169,7 @@ export const classes: Class[] = [
     duration: 50,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '10',
@@ -170,6 +182,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 1,
+    waitlist: false,
   },
   {
     id: '14',
@@ -182,6 +195,7 @@ export const classes: Class[] = [
     duration: 45,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '15',
@@ -194,6 +208,7 @@ export const classes: Class[] = [
     duration: 45,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
   {
     id: '11',
@@ -206,6 +221,7 @@ export const classes: Class[] = [
     duration: 60,
     level: 'All Levels',
     capacity: 12,
+    waitlist: false,
   },
 ];
 
