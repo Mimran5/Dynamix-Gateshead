@@ -13,10 +13,10 @@ export const instructors: Instructor[] = [
     bio: 'Sonni is a certified gymnastics instructor with extensive experience in coaching students of all levels. She specializes in developing fundamental skills and advanced techniques in gymnastics.'
   },
   {
-    id: 'maryna-kiselar',
-    name: 'Maryna Kiselar',
+    id: 'teresa-carter',
+    name: 'Teresa Carter',
     specialty: 'Pilates',
-    bio: 'Maryna is a certified Pilates instructor with a passion for helping clients build core strength and improve posture. Her classes focus on proper form and technique.'
+    bio: 'With over 10 years of experience, Teresa is a certified Pilates instructor with a passion for helping clients build core strength and improve posture. Her classes focus on proper form and technique.'
   },
   {
     id: 'olivia-appleby',
