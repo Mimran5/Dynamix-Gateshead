@@ -1,6 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
 
 export interface Subscription {
   id: string;
@@ -36,7 +36,8 @@ export const createCustomer = async (email: string, name: string) => {
       throw new Error('Failed to create customer');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error creating customer:', error);
     throw error;
@@ -57,7 +58,8 @@ export const createSubscription = async (customerId: string, priceId: string) =>
       throw new Error('Failed to create subscription');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error creating subscription:', error);
     throw error;
@@ -93,7 +95,8 @@ export const cancelSubscription = async (subscriptionId: string) => {
       throw new Error('Failed to cancel subscription');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error canceling subscription:', error);
     throw error;

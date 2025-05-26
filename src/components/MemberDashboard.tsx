@@ -403,40 +403,12 @@ const MemberDashboard: React.FC = () => {
       const priceId = getPriceIdForMembership(newMembership);
       const { clientSecret, subscriptionId } = await createSubscription(customerId, priceId);
       
-      // If upgrading, show payment modal with Stripe
-      if (newPlan.price > currentPlan.price) {
-        setClientSecret(clientSecret);
-        setShowPaymentModal(true);
-        return;
-      }
-
-      // If downgrading, set pending change
-      const ref = doc(db, 'users', user.uid);
-      await updateDoc(ref, { 
-        membershipType: newMembership,
-        pendingChange: true,
-        changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      });
-      setUserDoc({ 
-        ...userDoc, 
-        membershipType: newMembership,
-        pendingChange: true,
-        changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      });
-      setUpgrading(false);
-      setNewMembership('');
-      setPendingChange(true);
-
-      // Add to history
-      await addToHistory('membership', {
-        action: 'downgrade',
-        from: currentPlan,
-        to: newPlan,
-        effectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      });
+      // Show payment modal with Stripe for both upgrade and downgrade
+      setClientSecret(clientSecret);
+      setShowPaymentModal(true);
+      setUpgrading(true);
     } catch (error: any) {
       setError(error.message);
-    } finally {
       setProcessing(false);
     }
   };
@@ -938,32 +910,56 @@ const MemberDashboard: React.FC = () => {
     if (!newMembership) return;
     
     const ref = doc(db, 'users', user.uid);
-    await updateDoc(ref, { 
-      membershipType: newMembership,
-      pendingChange: false
-    });
-    
-    setUserDoc({ 
-      ...userDoc, 
-      membershipType: newMembership,
-      pendingChange: false
-    });
-    
-    setUpgrading(false);
-    setNewMembership('');
-    setShowPaymentModal(false);
-    setClientSecret('');
-    
-    // Add to history
     const newPlan = memberships.find(m => m.id === newMembership);
     const currentPlan = memberships.find(m => m.id === userDoc.membershipType);
-    if (newPlan && currentPlan) {
+    
+    if (!newPlan || !currentPlan) return;
+
+    try {
+      if (newPlan.price > currentPlan.price) {
+        // Upgrade - immediate change
+        await updateDoc(ref, { 
+          membershipType: newMembership,
+          pendingChange: false
+        });
+        
+        setUserDoc({ 
+          ...userDoc, 
+          membershipType: newMembership,
+          pendingChange: false
+        });
+      } else {
+        // Downgrade - set pending change
+        await updateDoc(ref, { 
+          membershipType: newMembership,
+          pendingChange: true,
+          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        });
+        
+        setUserDoc({ 
+          ...userDoc, 
+          membershipType: newMembership,
+          pendingChange: true,
+          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        });
+      }
+      
+      setUpgrading(false);
+      setNewMembership('');
+      setShowPaymentModal(false);
+      setClientSecret('');
+      
+      // Add to history
       await addToHistory('membership', {
-        action: 'upgrade',
+        action: newPlan.price > currentPlan.price ? 'upgrade' : 'downgrade',
         from: currentPlan,
         to: newPlan,
         effectiveDate: new Date()
       });
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -1483,15 +1479,13 @@ const MemberDashboard: React.FC = () => {
       {/* Add payment modal */}
       <PaymentModal
         isOpen={showPaymentModal}
-        onClose={() => {
-          setShowPaymentModal(false);
-          setClientSecret('');
-        }}
+        onClose={handlePaymentSuccess}
         clientSecret={clientSecret}
         onError={(error) => {
           setError(error);
           setShowPaymentModal(false);
           setClientSecret('');
+          setProcessing(false);
         }}
       />
     </div>
