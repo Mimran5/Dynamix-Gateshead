@@ -33,6 +33,8 @@ interface Booking {
 }
 
 const getClassLimit = (membershipType: string) => {
+  console.log('Current membership type:', membershipType); // Add debugging
+  if (!membershipType) return 0; // Handle undefined case
   if (membershipType === 'basic') return 6;
   if (membershipType === 'standard') return 10;
   if (membershipType === 'family') return 20;
@@ -1175,9 +1177,11 @@ const MemberDashboard: React.FC = () => {
                           <h3 className="text-xl font-medium text-gray-900 mb-6">Membership Status</h3>
                           <div className="bg-gray-50 rounded-lg p-6">
                             <p className="text-sm font-medium text-gray-500">Current Plan</p>
-                            <p className="mt-1 text-2xl font-semibold text-gray-900">{membership.name}</p>
+                            <p className="mt-1 text-2xl font-semibold text-gray-900">{membership?.name || 'No Plan Selected'}</p>
                             <p className="mt-4 text-sm font-medium text-gray-500">Classes Remaining</p>
-                            <p className="mt-1 text-2xl font-semibold text-gray-900">{classesLeft} of {classLimit}</p>
+                            <p className="mt-1 text-2xl font-semibold text-gray-900">
+                              {classesLeft} of {classLimit} ({userDoc?.membershipType || 'No membership type set'})
+                            </p>
                             {pendingChange && (
                               <div className="mt-6 p-4 bg-yellow-50 rounded-md">
                                 <p className="text-sm text-yellow-700">
@@ -1319,9 +1323,9 @@ const MemberDashboard: React.FC = () => {
                           ) : (
                             <div className="space-y-4">
                               {upcoming.map((classItem) => (
-                                <div key={classItem.id} className="border rounded-lg p-4 bg-white">
+                                <div key={classItem.id} className="border rounded-lg p-4 bg-white shadow-sm">
                                   <div className="flex justify-between items-start">
-                                    <div>
+                                    <div className="flex-1">
                                       <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
                                       <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
                                       <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
@@ -1331,7 +1335,7 @@ const MemberDashboard: React.FC = () => {
                                     </div>
                                     <button
                                       onClick={() => setShowCancelConfirm(classItem.id)}
-                                      className="ml-4 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                                      className="ml-4 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md whitespace-nowrap"
                                     >
                                       Cancel
                                     </button>
@@ -1346,9 +1350,9 @@ const MemberDashboard: React.FC = () => {
                           <h3 className="text-xl font-medium text-gray-900 mb-6">Available Classes</h3>
                           <div className="space-y-4">
                             {available.map((classItem) => (
-                              <div key={classItem.id} className="border rounded-lg p-4 bg-white">
+                              <div key={classItem.id} className="border rounded-lg p-4 bg-white shadow-sm">
                                 <div className="flex justify-between items-start">
-                                  <div>
+                                  <div className="flex-1">
                                     <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
                                     <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
                                     <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
@@ -1367,17 +1371,17 @@ const MemberDashboard: React.FC = () => {
                                       </div>
                                     )}
                                   </div>
-                                  <div className="flex space-x-2">
+                                  <div className="flex space-x-2 ml-4">
                                     <button
                                       onClick={() => handleBookClass(classItem.id)}
                                       disabled={classesLeft <= 0}
-                                      className={`px-3 py-1.5 text-sm font-medium rounded-md ${
+                                      className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap ${
                                         classesLeft <= 0
                                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                           : 'bg-primary-600 text-white hover:bg-primary-700'
                                       }`}
                                     >
-                                      Book
+                                      Book Class
                                     </button>
                                   </div>
                                 </div>
