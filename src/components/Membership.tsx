@@ -213,8 +213,9 @@ const Membership: React.FC = () => {
                       >
                         <CreditCard size={16} className="mr-2" />
                         {!user ? 'Sign in to Purchase' : 
+                          !userMembership ? 'Get Started' :
                           isCurrentMembership ? 'Current Plan' : 
-                          'Purchase Now'}
+                          membership.price > (memberships.find(m => m.id === userMembership.membershipType)?.price || 0) ? 'Upgrade' : 'Downgrade'}
                       </button>
                     )}
                   </div>

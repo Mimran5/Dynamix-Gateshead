@@ -207,14 +207,14 @@ const Timetable: React.FC = () => {
         )}
 
         <div className="overflow-x-auto rounded-2xl shadow-xl">
-          <div className="min-w-[1200px] bg-white p-4">
-            <div className="grid grid-cols-7 gap-4">
+          <div className="min-w-[1200px] bg-white p-3">
+            <div className="grid grid-cols-7 gap-3">
               {/* Time column */}
               <div className="col-span-1">
-                <div className="h-16"></div> {/* Spacer for day headers */}
-                <div className="space-y-2">
+                <div className="h-12"></div> {/* Reduced spacer for day headers */}
+                <div className="space-y-1">
                   {timeSlots.map(time => (
-                    <div key={time} className="h-24 flex items-center justify-end pr-4 text-sm text-gray-500">
+                    <div key={time} className="h-16 flex items-center justify-end pr-3 text-sm text-gray-500">
                       {time}
                     </div>
                   ))}
@@ -224,39 +224,39 @@ const Timetable: React.FC = () => {
               {/* Day columns */}
               {days.map((day) => (
                 <div key={day} className="col-span-1">
-                  <h3 className="h-16 flex items-center justify-center text-lg font-semibold text-gray-800 border-b">
+                  <h3 className="h-12 flex items-center justify-center text-lg font-semibold text-gray-800 border-b">
                     {day}
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {timeSlots.map(time => {
                       const classItem = getClassByTimeAndDay(time, day);
                       if (!classItem) {
-                        return <div key={time} className="h-24 border border-gray-100 rounded-lg"></div>;
+                        return <div key={time} className="h-16 border border-gray-100 rounded-lg"></div>;
                       }
 
                       const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
                                          (classAvailability[classItem.id]?.waitlisted || 0);
                       if (totalBookings < 5 && classAvailability[classItem.id]?.available === 0) {
-                        return <div key={time} className="h-24 border border-gray-100 rounded-lg"></div>;
+                        return <div key={time} className="h-16 border border-gray-100 rounded-lg"></div>;
                       }
 
                       return (
                         <div
                           key={classItem.id}
-                          className={`h-24 border-2 rounded-lg p-2 hover:shadow-md transition-all duration-200 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
+                          className={`h-16 border-2 rounded-lg p-1.5 hover:shadow-md transition-all duration-200 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
                         >
                           <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start">
-                              <h4 className="font-medium text-gray-900 text-sm">{classItem.name}</h4>
-                              <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-white/50 text-gray-700">
+                              <h4 className="font-medium text-gray-900 text-xs">{classItem.name}</h4>
+                              <span className="text-[10px] font-medium px-1 py-0.5 rounded-full bg-white/50 text-gray-700">
                                 {classItem.level}
                               </span>
                             </div>
-                            <div className="text-xs text-gray-600 mt-1">
+                            <div className="text-[10px] text-gray-600 mt-0.5">
                               {classItem.instructor}
                             </div>
                             <div className="mt-auto flex items-center justify-between">
-                              <div className="text-xs text-gray-600">
+                              <div className="text-[10px] text-gray-600">
                                 <span className="font-medium">{classAvailability[classItem.id]?.available || 0}</span> spots
                                 {classAvailability[classItem.id]?.waitlisted > 0 && (
                                   <span className="ml-1 text-orange-600">
@@ -268,7 +268,7 @@ const Timetable: React.FC = () => {
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+                                  className={`px-1.5 py-0.5 text-[10px] font-medium rounded-full transition-all duration-200 ${
                                     classAvailability[classItem.id]?.available > 0
                                       ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md'
                                       : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md'
@@ -285,7 +285,7 @@ const Timetable: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={() => navigate('/member')}
-                                  className="px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md"
+                                  className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md"
                                 >
                                   Login
                                 </button>
