@@ -12,6 +12,8 @@ import { auth } from '../firebase';
 import { useBooking } from '../context/BookingContext';
 import { createCustomer, createSubscription } from '../services/subscriptionService';
 import StripeProvider from './StripeProvider';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 interface Class {
   id: string;
@@ -31,6 +33,9 @@ interface Booking {
   instructor: string;
   bookedAt: string;
 }
+
+// Initialize Stripe
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
 
 const getClassLimit = (membershipType: string) => {
   console.log('Current membership type:', membershipType); // Add debugging
@@ -400,8 +405,8 @@ const MemberDashboard: React.FC = () => {
       
       // If upgrading, show payment modal with Stripe
       if (newPlan.price > currentPlan.price) {
-        setShowPaymentModal(true);
         setClientSecret(clientSecret);
+        setShowPaymentModal(true);
         return;
       }
 
@@ -890,6 +895,76 @@ const MemberDashboard: React.FC = () => {
         </div>
       </div>
     );
+  };
+
+  // Add payment modal component
+  const PaymentModal = ({ 
+    isOpen, 
+    onClose, 
+    clientSecret,
+    onError 
+  }: { 
+    isOpen: boolean; 
+    onClose: () => void; 
+    clientSecret: string;
+    onError: (error: string) => void;
+  }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Complete Payment</h3>
+          {clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <StripeProvider onSuccess={onClose} onError={onError} />
+            </Elements>
+          )}
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Add payment success handler
+  const handlePaymentSuccess = async () => {
+    if (!newMembership) return;
+    
+    const ref = doc(db, 'users', user.uid);
+    await updateDoc(ref, { 
+      membershipType: newMembership,
+      pendingChange: false
+    });
+    
+    setUserDoc({ 
+      ...userDoc, 
+      membershipType: newMembership,
+      pendingChange: false
+    });
+    
+    setUpgrading(false);
+    setNewMembership('');
+    setShowPaymentModal(false);
+    setClientSecret('');
+    
+    // Add to history
+    const newPlan = memberships.find(m => m.id === newMembership);
+    const currentPlan = memberships.find(m => m.id === userDoc.membershipType);
+    if (newPlan && currentPlan) {
+      await addToHistory('membership', {
+        action: 'upgrade',
+        from: currentPlan,
+        to: newPlan,
+        effectiveDate: new Date()
+      });
+    }
   };
 
   return (
@@ -1404,6 +1479,21 @@ const MemberDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Add payment modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setClientSecret('');
+        }}
+        clientSecret={clientSecret}
+        onError={(error) => {
+          setError(error);
+          setShowPaymentModal(false);
+          setClientSecret('');
+        }}
+      />
     </div>
   );
 };
