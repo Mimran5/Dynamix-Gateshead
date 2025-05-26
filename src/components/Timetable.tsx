@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Timetable: React.FC = () => {
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [classAvailability, setClassAvailability] = useState<Record<string, { available: number; waitlisted: number }>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -15,9 +15,9 @@ const Timetable: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const filteredClasses = classes.filter(c => 
-    selectedType === 'all' || c.type === selectedType
-  );
+  const filteredClasses = selectedType
+    ? classes.filter(c => c.type === selectedType)
+    : classes;
 
   // Group classes by day
   const classesByDay = days.reduce((acc, day) => {
@@ -157,6 +157,10 @@ const Timetable: React.FC = () => {
     }
   };
 
+  const getClassByTimeAndDay = (time: string, day: string) => {
+    return filteredClasses.find(c => c.time === time && c.day === day);
+  };
+
   return (
     <section id="timetable" className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
@@ -170,9 +174,9 @@ const Timetable: React.FC = () => {
         <div className="mb-12">
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={() => setSelectedType('all')}
+              onClick={() => setSelectedType(null)}
               className={`px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 ${
-                selectedType === 'all'
+                !selectedType
                   ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
                   : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
               }`}
@@ -226,11 +230,9 @@ const Timetable: React.FC = () => {
                             <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 text-gray-700">{classItem.level}</span>
                           </div>
                           <div className="flex items-center text-gray-600 text-sm mb-2">
-                            <Clock size={18} className="mr-2 text-teal-600" />
                             {classItem.time} ({classItem.duration} mins)
                           </div>
                           <div className="flex items-center text-gray-600 text-sm mb-4">
-                            <Users size={18} className="mr-2 text-teal-600" />
                             {classItem.instructor}
                           </div>
                           <div className="flex items-center justify-between">
