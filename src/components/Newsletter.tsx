@@ -34,7 +34,7 @@ const Newsletter: React.FC = () => {
   };
   
   return (
-    <section id="newsletter" className="py-20 bg-teal-600">
+    <section id="newsletter" className="py-20 bg-primary-700">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -42,14 +42,14 @@ const Newsletter: React.FC = () => {
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                 Stay Updated
               </h2>
-              <p className="text-xl text-teal-100 mb-6">
+              <p className="text-xl text-primary-100 mb-6">
                 Subscribe to our newsletter to receive the latest news, class updates, and special offers directly to your inbox.
               </p>
               <div className="flex items-start mb-8">
-                <Mail size={24} className="text-teal-300 mr-4 mt-1" />
+                <Mail size={24} className="text-primary-300 mr-4 mt-1" />
                 <div>
                   <h3 className="text-white font-bold text-lg">What you'll receive:</h3>
-                  <ul className="text-teal-100 space-y-2 mt-2">
+                  <ul className="text-primary-100 space-y-2 mt-2">
                     <li>• Monthly schedule updates</li>
                     <li>• Exclusive promotions and discounts</li>
                     <li>• New class announcements</li>
@@ -63,7 +63,7 @@ const Newsletter: React.FC = () => {
               {isSubmitted ? (
                 <div className="text-center py-8">
                   <div className="flex justify-center mb-4">
-                    <CheckCircle size={48} className="text-teal-600" />
+                    <CheckCircle size={48} className="text-primary-600" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Thank You!</h3>
                   <p className="text-gray-600">
@@ -82,7 +82,7 @@ const Newsletter: React.FC = () => {
                       <input
                         type="text"
                         id="name"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="Enter your name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -96,7 +96,7 @@ const Newsletter: React.FC = () => {
                       <input
                         type="email"
                         id="email"
-                        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors ${
+                        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
                           error ? 'border-red-500 bg-red-50' : 'border-gray-300'
                         }`}
                         placeholder="Enter your email"
@@ -111,7 +111,7 @@ const Newsletter: React.FC = () => {
                     
                     <button 
                       type="submit" 
-                      className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-flex items-center justify-center"
+                      className="w-full bg-primary-700 hover:bg-primary-800 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-flex items-center justify-center"
                     >
                       Subscribe Now
                       <ArrowRight size={18} className="ml-2" />
@@ -119,7 +119,7 @@ const Newsletter: React.FC = () => {
                     
                     <p className="mt-4 text-xs text-gray-500 text-center">
                       By subscribing, you agree to receive our newsletter and accept our{' '}
-                      <a href="#" className="text-teal-600 hover:text-teal-800">Privacy Policy</a>.
+                      <a href="#" className="text-primary-600 hover:text-primary-800">Privacy Policy</a>.
                       We respect your privacy and will never share your information.
                     </p>
                   </form>

@@ -165,7 +165,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         className={`w-full py-2 px-4 rounded-md text-white font-medium ${
           loading
             ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-teal-600 hover:bg-teal-700'
+            : 'bg-primary-600 hover:bg-primary-700'
         }`}
       >
         {loading ? 'Processing...' : isDirectDebit ? 'Set Up Direct Debit' : 'Pay Now'}
