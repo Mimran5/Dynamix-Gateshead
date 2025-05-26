@@ -2,4 +2,5 @@
 export const heroImage = './assets/images/hero/hero.jpg';
 
 // Logo
-export const logo = new URL('./logo/logo.png', import.meta.url).href; 
+import logoImage from './logo/logo.png';
+export const logo = logoImage; 
