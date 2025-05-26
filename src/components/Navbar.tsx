@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
               <img 
                 src={logo} 
                 alt="Dynamix" 
-                className="h-16 md:h-20 w-auto object-contain"
+                className="h-32 md:h-40 w-auto object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
