@@ -144,22 +144,22 @@ const Membership: React.FC = () => {
               <div 
                 key={membership.id}
                 className={`bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 ${
-                  membership.isPopular ? 'ring-2 ring-teal-500' : ''
-                } ${isCurrentMembership ? 'border-2 border-teal-500' : ''}`}
+                  membership.isPopular ? 'ring-2 ring-primary-500' : ''
+                } ${isCurrentMembership ? 'border-2 border-primary-500' : ''}`}
               >
                 {membership.isPopular && (
-                  <div className="bg-teal-500 text-white text-center py-2 font-medium">
+                  <div className="bg-primary-500 text-white text-center py-2 font-medium">
                     Most Popular
                   </div>
                 )}
                 {isCurrentMembership && (
-                  <div className="bg-teal-100 text-teal-800 text-center py-2 font-medium">
+                  <div className="bg-primary-100 text-primary-800 text-center py-2 font-medium">
                     Current Plan
                   </div>
                 )}
                 <div className="p-6">
                   <h3 className="text-2xl font-bold mb-2">{membership.name}</h3>
-                  <div className="text-3xl font-bold text-teal-600 mb-2">
+                  <div className="text-3xl font-bold text-primary-600 mb-2">
                     £{membership.price}
                     <span className="text-base font-normal text-gray-500">/month</span>
                   </div>
@@ -172,7 +172,7 @@ const Membership: React.FC = () => {
                   <ul className="space-y-3 mb-6">
                     {membership.features.map((feature, index) => (
                       <li key={index} className="flex items-center text-gray-600">
-                        <svg className="w-5 h-5 text-teal-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-primary-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
                         {feature}
@@ -207,8 +207,8 @@ const Membership: React.FC = () => {
                         onClick={() => handleMembershipSelect(membership.id)}
                         className={`w-full ${
                           isCurrentMembership
-                            ? 'bg-teal-100 text-teal-800 hover:bg-teal-200'
-                            : 'bg-teal-600 text-white hover:bg-teal-700'
+                            ? 'bg-primary-100 text-primary-800 hover:bg-primary-200'
+                            : 'bg-primary-600 text-white hover:bg-primary-700'
                         } py-2 px-4 rounded-lg transition-colors flex items-center justify-center`}
                       >
                         <CreditCard size={16} className="mr-2" />
@@ -262,8 +262,8 @@ const Membership: React.FC = () => {
           <h3 className="text-2xl font-bold mb-4">Contact Us</h3>
           <div className="space-y-2 text-gray-600">
             <p>Dynamix, Unit 3 Gladstone Terrace, Gateshead, NE8 4DY</p>
-            <p>Email: <a href="mailto:info@dynamixdga.com" className="text-teal-600 hover:text-teal-800">info@dynamixdga.com</a></p>
-            <p>Phone: <a href="tel:07831983731" className="text-teal-600 hover:text-teal-800">07831 983731</a></p>
+            <p>Email: <a href="mailto:info@dynamixdga.com" className="text-primary-600 hover:text-primary-800">info@dynamixdga.com</a></p>
+            <p>Phone: <a href="tel:07831983731" className="text-primary-600 hover:text-primary-800">07831 983731</a></p>
           </div>
         </div>
       </div>

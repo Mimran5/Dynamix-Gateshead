@@ -35,7 +35,7 @@ const Instructors: React.FC = () => {
               ref={instructorRef}
               className={`bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 ${
                 activeInstructor === instructor.id 
-                  ? 'ring-2 ring-teal-500 shadow-lg' 
+                  ? 'ring-2 ring-primary-500 shadow-lg' 
                   : 'hover:shadow-lg'
               }`}
               onClick={() => setActiveInstructor(
@@ -44,11 +44,11 @@ const Instructors: React.FC = () => {
             >
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">{instructor.name}</h3>
-                <p className="text-teal-600 font-medium mb-4">{instructor.specialty}</p>
+                <p className="text-primary-600 font-medium mb-4">{instructor.specialty}</p>
                 {activeInstructor === instructor.id ? (
                   <p className="text-gray-600">{instructor.bio}</p>
                 ) : (
-                  <button className="text-teal-600 font-medium hover:text-teal-800 transition-colors">
+                  <button className="text-primary-600 font-medium hover:text-primary-800 transition-colors">
                     View Bio
                   </button>
                 )}

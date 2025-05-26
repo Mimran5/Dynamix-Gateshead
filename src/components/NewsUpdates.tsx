@@ -59,7 +59,7 @@ const NewsUpdates: React.FC = () => {
                 
                 <button 
                   onClick={() => toggleExpand(item.id)}
-                  className="text-teal-600 font-medium inline-flex items-center hover:text-teal-800 transition-colors"
+                  className="text-primary-600 font-medium inline-flex items-center hover:text-primary-800 transition-colors"
                 >
                   {expandedNews === item.id ? 'Read Less' : 'Read More'}
                   <ArrowRight size={16} className={`ml-1 transition-transform duration-300 ${
