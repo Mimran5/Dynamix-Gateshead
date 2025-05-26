@@ -54,14 +54,27 @@ router.post('/cancel-subscription', async (req, res) => {
 router.post('/create-payment-intent', async (req, res) => {
   try {
     const { amount, currency = 'gbp' } = req.body;
+    
+    // Validate amount
+    if (!amount || amount < 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: Math.round(amount), // Ensure amount is an integer
       currency,
       automatic_payment_methods: {
         enabled: true,
       },
+      metadata: {
+        integration_check: 'accept_a_payment'
+      }
     });
-    res.json({ clientSecret: paymentIntent.client_secret });
+
+    res.json({ 
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
+    });
   } catch (error) {
     console.error('Error creating payment intent:', error);
     res.status(500).json({ error: error.message });
