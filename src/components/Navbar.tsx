@@ -53,7 +53,17 @@ const Navbar: React.FC = () => {
           {/* Logo and Brand */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <img src={logo} alt="Dynamix" className="h-8 md:h-10" />
+              <img 
+                src={logo} 
+                alt="Dynamix" 
+                className="h-8 md:h-10 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.parentElement?.classList.add('text-2xl', 'font-bold', 'text-teal-600');
+                  target.parentElement!.textContent = 'Dynamix';
+                }}
+              />
             </Link>
           </div>
 
