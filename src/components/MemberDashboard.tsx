@@ -398,12 +398,25 @@ const MemberDashboard: React.FC = () => {
 
     setProcessing(true);
     try {
-      // Create or get customer
-      const { customerId } = await createCustomer(user.email || '', user.email?.split('@')[0] || '');
-      const priceId = getPriceIdForMembership(newMembership);
-      const { clientSecret, subscriptionId } = await createSubscription(customerId, priceId);
+      // Create payment intent first
+      const response = await fetch('/api/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: newPlan.price * 100, // Convert to cents
+          currency: 'gbp'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create payment intent');
+      }
+
+      const { clientSecret } = await response.json();
       
-      // Show payment modal with Stripe for both upgrade and downgrade
+      // Show payment modal with Stripe
       setClientSecret(clientSecret);
       setShowPaymentModal(true);
       setUpgrading(true);
@@ -602,29 +615,29 @@ const MemberDashboard: React.FC = () => {
           <div className="flex space-x-4 overflow-x-auto">
             {isAdmin ? (
               <>
-            <button
+                <button
                   onClick={() => setActiveTab('admin')}
-              className={`${
+                  className={`${
                     activeTab === 'admin'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Admin Dashboard
-            </button>
-            <button
+                </button>
+                <button
                   onClick={() => setActiveTab('bookings')}
-              className={`${
+                  className={`${
                     activeTab === 'bookings'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Class Management
-            </button>
-            <button
+                </button>
+                <button
                   onClick={() => setActiveTab('attendance')}
-              className={`${
+                  className={`${
                     activeTab === 'attendance'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
@@ -644,37 +657,37 @@ const MemberDashboard: React.FC = () => {
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Profile
-            </button>
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`${
-                activeTab === 'notifications'
+                </button>
+                <button
+                  onClick={() => setActiveTab('notifications')}
+                  className={`${
+                    activeTab === 'notifications'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
-            >
-              Notifications
-            </button>
-            <button
+                >
+                  Notifications
+                </button>
+                <button
                   onClick={() => setActiveTab('membership')}
-              className={`${
+                  className={`${
                     activeTab === 'membership'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Membership
-            </button>
-              <button
+                </button>
+                <button
                   onClick={() => setActiveTab('bookings')}
-                className={`${
+                  className={`${
                     activeTab === 'bookings'
                       ? 'border-primary-500 text-primary-600'
                       : 'border-transparent text-gray-700 hover:text-gray-900 hover:border-gray-300'
                   } inline-flex items-center px-3 py-2 border-b-2 text-sm font-medium whitespace-nowrap`}
                 >
                   Bookings
-              </button>
+                </button>
                 <button
                   onClick={() => setActiveTab('attendance')}
                   className={`${
@@ -691,13 +704,13 @@ const MemberDashboard: React.FC = () => {
           <div className="flex items-center ml-4">
             <button
               onClick={handleLogout}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               Logout
             </button>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
     </div>
   );
 
