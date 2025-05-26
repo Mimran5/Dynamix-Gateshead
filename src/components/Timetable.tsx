@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { classes, days, classTypes, Class } from '../data/classes';
+import { classes, days, classTypes, Class, timeSlots } from '../data/classes';
 import { Clock, Users, AlertCircle } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
@@ -207,49 +207,68 @@ const Timetable: React.FC = () => {
         )}
 
         <div className="overflow-x-auto rounded-2xl shadow-xl">
-          <div className="min-w-[1000px] bg-white p-6">
-            <div className="grid grid-cols-5 gap-8">
+          <div className="min-w-[1200px] bg-white p-4">
+            <div className="grid grid-cols-7 gap-4">
+              {/* Time column */}
+              <div className="col-span-1">
+                <div className="h-16"></div> {/* Spacer for day headers */}
+                <div className="space-y-2">
+                  {timeSlots.map(time => (
+                    <div key={time} className="h-24 flex items-center justify-end pr-4 text-sm text-gray-500">
+                      {time}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Day columns */}
               {days.map((day) => (
-                <div key={day} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
-                  <h3 className="text-xl font-bold mb-6 text-center text-gray-800 border-b pb-3">{day}</h3>
-                  <div className="space-y-5">
-                    {classesByDay[day].map((classItem) => {
+                <div key={day} className="col-span-1">
+                  <h3 className="h-16 flex items-center justify-center text-lg font-semibold text-gray-800 border-b">
+                    {day}
+                  </h3>
+                  <div className="space-y-2">
+                    {timeSlots.map(time => {
+                      const classItem = getClassByTimeAndDay(time, day);
+                      if (!classItem) {
+                        return <div key={time} className="h-24 border border-gray-100 rounded-lg"></div>;
+                      }
+
                       const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
-                                          (classAvailability[classItem.id]?.waitlisted || 0);
+                                         (classAvailability[classItem.id]?.waitlisted || 0);
                       if (totalBookings < 5 && classAvailability[classItem.id]?.available === 0) {
-                        return null;
+                        return <div key={time} className="h-24 border border-gray-100 rounded-lg"></div>;
                       }
 
                       return (
                         <div
                           key={classItem.id}
-                          className={`border-2 rounded-xl p-5 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
+                          className={`h-24 border-2 rounded-lg p-2 hover:shadow-md transition-all duration-200 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
                         >
-                          <div className="flex justify-between items-start mb-3">
-                            <h4 className="font-semibold text-gray-900 text-base">{classItem.name}</h4>
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 text-gray-700">{classItem.level}</span>
-                          </div>
-                          <div className="flex items-center text-gray-600 text-sm mb-2">
-                            {classItem.time} ({classItem.duration} mins)
-                          </div>
-                          <div className="flex items-center text-gray-600 text-sm mb-4">
-                            {classItem.instructor}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-600">
-                              <span className="font-medium">{classAvailability[classItem.id]?.available || 0}</span> spots
-                              {classAvailability[classItem.id]?.waitlisted > 0 && (
-                                <span className="ml-1 text-orange-600">
-                                  ({classAvailability[classItem.id]?.waitlisted})
-                                </span>
-                              )}
+                          <div className="flex flex-col h-full">
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-medium text-gray-900 text-sm">{classItem.name}</h4>
+                              <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-white/50 text-gray-700">
+                                {classItem.level}
+                              </span>
                             </div>
-                            {user ? (
-                              <div className="flex space-x-2">
+                            <div className="text-xs text-gray-600 mt-1">
+                              {classItem.instructor}
+                            </div>
+                            <div className="mt-auto flex items-center justify-between">
+                              <div className="text-xs text-gray-600">
+                                <span className="font-medium">{classAvailability[classItem.id]?.available || 0}</span> spots
+                                {classAvailability[classItem.id]?.waitlisted > 0 && (
+                                  <span className="ml-1 text-orange-600">
+                                    ({classAvailability[classItem.id]?.waitlisted})
+                                  </span>
+                                )}
+                              </div>
+                              {user ? (
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 transform hover:scale-105 ${
+                                  className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                                     classAvailability[classItem.id]?.available > 0
                                       ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md'
                                       : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md'
@@ -263,24 +282,15 @@ const Timetable: React.FC = () => {
                                     'Waitlist'
                                   )}
                                 </button>
-                                {classAvailability[classItem.id]?.available === 0 && !isClassConfirmed(classItem.id) && (
-                                  <button
-                                    onClick={() => setShowCancelConfirm(classItem.id)}
-                                    disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                    className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    Cancel
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => navigate('/member')}
-                                className="px-4 py-2 text-sm font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md transition-all duration-200 transform hover:scale-105"
-                              >
-                                Login to Book
-                              </button>
-                            )}
+                              ) : (
+                                <button
+                                  onClick={() => navigate('/member')}
+                                  className="px-2 py-1 text-xs font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md"
+                                >
+                                  Login
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
@@ -293,31 +303,37 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-12 bg-white rounded-2xl shadow-lg p-8">
-          <h4 className="text-lg font-semibold text-gray-800 mb-6 text-center">Class Status</h4>
-          <div className="flex flex-wrap justify-center gap-6 mb-8">
-            <div className="flex items-center">
-              <div className="w-5 h-5 rounded-full bg-green-50 border-2 border-green-500 mr-3"></div>
-              <span className="text-sm text-gray-700">Confirmed Class (5+ bookings)</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-5 h-5 rounded-full bg-blue-50 border-2 border-blue-500 mr-3"></div>
-              <span className="text-sm text-gray-700">Available Spots</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-5 h-5 rounded-full bg-orange-50 border-2 border-orange-500 mr-3"></div>
-              <span className="text-sm text-gray-700">Full (Waitlist Available)</span>
-            </div>
-          </div>
-
-          <h4 className="text-lg font-semibold text-gray-800 mb-6 text-center">Class Types</h4>
-          <div className="flex flex-wrap justify-center gap-6">
-            {classTypes.map(type => (
-              <div key={type.id} className="flex items-center">
-                <div className={`w-5 h-5 rounded-full ${getClassTypeColor(type.id)} mr-3`}></div>
-                <span className="text-sm text-gray-700">{type.name}</span>
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+          <div className="flex flex-wrap justify-center gap-8">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-800 mb-4 text-center">Class Status</h4>
+              <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-green-50 border-2 border-green-500 mr-2"></div>
+                  <span className="text-xs text-gray-700">Confirmed (5+)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-blue-50 border-2 border-blue-500 mr-2"></div>
+                  <span className="text-xs text-gray-700">Available</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-orange-50 border-2 border-orange-500 mr-2"></div>
+                  <span className="text-xs text-gray-700">Full (Waitlist)</span>
+                </div>
               </div>
-            ))}
+            </div>
+
+            <div>
+              <h4 className="text-sm font-semibold text-gray-800 mb-4 text-center">Class Types</h4>
+              <div className="flex flex-wrap justify-center gap-4">
+                {classTypes.map(type => (
+                  <div key={type.id} className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
+                    <span className="text-xs text-gray-700">{type.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
