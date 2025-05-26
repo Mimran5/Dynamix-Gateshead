@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
-                  target.parentElement?.classList.add('text-2xl', 'font-bold', 'text-primary-600');
+                  target.parentElement?.classList.add('text-2xl', 'font-bold', 'text-primary-700');
                   target.parentElement!.textContent = 'Dynamix';
                 }}
               />
@@ -71,21 +71,21 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-8">
             {!isDashboard && (
               <>
-                <Link to="/" className="text-gray-700 hover:text-primary-600 transition-colors">Home</Link>
-                <Link to="/classes" className="text-gray-700 hover:text-primary-600 transition-colors">Classes</Link>
-                <Link to="/timetable" className="text-gray-700 hover:text-primary-600 transition-colors">Timetable</Link>
-                <Link to="/instructors" className="text-gray-700 hover:text-primary-600 transition-colors">Instructors</Link>
-                <Link to="/membership" className="text-gray-700 hover:text-primary-600 transition-colors">Membership</Link>
+                <Link to="/" className="text-gray-700 hover:text-primary-700 transition-colors">Home</Link>
+                <Link to="/classes" className="text-gray-700 hover:text-primary-700 transition-colors">Classes</Link>
+                <Link to="/timetable" className="text-gray-700 hover:text-primary-700 transition-colors">Timetable</Link>
+                <Link to="/instructors" className="text-gray-700 hover:text-primary-700 transition-colors">Instructors</Link>
+                <Link to="/membership" className="text-gray-700 hover:text-primary-700 transition-colors">Membership</Link>
               </>
             )}
             
             {/* Member Portal Navigation */}
             {isDashboard && (
               <>
-                <Link to="/dashboard" className="text-primary-600 font-medium">My Portal</Link>
-                <Link to="/dashboard/membership" className="text-gray-700 hover:text-primary-600 transition-colors">Membership</Link>
-                <Link to="/dashboard/schedule" className="text-gray-700 hover:text-primary-600 transition-colors">Class Schedule</Link>
-                <Link to="/dashboard/notifications" className="text-gray-700 hover:text-primary-600 transition-colors">Notifications</Link>
+                <Link to="/dashboard" className="text-primary-700 font-medium">My Portal</Link>
+                <Link to="/dashboard/membership" className="text-gray-700 hover:text-primary-700 transition-colors">Membership</Link>
+                <Link to="/dashboard/schedule" className="text-gray-700 hover:text-primary-700 transition-colors">Class Schedule</Link>
+                <Link to="/dashboard/notifications" className="text-gray-700 hover:text-primary-700 transition-colors">Notifications</Link>
               </>
             )}
 
@@ -95,7 +95,7 @@ const Navbar: React.FC = () => {
                 {!isDashboard && (
                   <Link
                     to="/dashboard"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Member Portal
@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-gray-700 hover:text-primary-600 transition-colors"
+                  className="text-gray-700 hover:text-primary-700 transition-colors"
                 >
                   Logout
                 </button>
@@ -113,7 +113,7 @@ const Navbar: React.FC = () => {
                 {!isAuth && (
                   <Link
                     to="/member"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Member Login
@@ -121,11 +121,11 @@ const Navbar: React.FC = () => {
                 )}
                 <button
                   onClick={toggleCart}
-                  className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors"
+                  className="relative p-2 text-gray-700 hover:text-primary-700 transition-colors"
                 >
                   <ShoppingCart className="w-6 h-6" />
                   {items.length > 0 && (
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 rounded-full">
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-700 rounded-full">
                       {items.length}
                     </span>
                   )}
@@ -138,18 +138,18 @@ const Navbar: React.FC = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={toggleCart}
-              className="relative p-2 text-gray-700 hover:text-primary-600 transition-colors mr-2"
+              className="relative p-2 text-gray-700 hover:text-primary-700 transition-colors mr-2"
             >
               <ShoppingCart className="w-6 h-6" />
               {items.length > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-600 rounded-full">
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-primary-700 rounded-full">
                   {items.length}
                 </span>
               )}
             </button>
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-700"
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
@@ -170,35 +170,35 @@ const Navbar: React.FC = () => {
               <>
                 <Link
                   to="/"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Home
                 </Link>
                 <Link
                   to="/classes"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Classes
                 </Link>
                 <Link
                   to="/timetable"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Timetable
                 </Link>
                 <Link
                   to="/instructors"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Instructors
                 </Link>
                 <Link
                   to="/membership"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Membership
@@ -208,28 +208,28 @@ const Navbar: React.FC = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-primary-600"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-primary-700"
                   onClick={toggleMenu}
                 >
                   My Portal
                 </Link>
                 <Link
                   to="/dashboard/membership"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Membership
                 </Link>
                 <Link
                   to="/dashboard/schedule"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Class Schedule
                 </Link>
                 <Link
                   to="/dashboard/notifications"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Notifications
@@ -241,7 +241,7 @@ const Navbar: React.FC = () => {
                 {!isDashboard && (
                   <Link
                     to="/dashboard"
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                     onClick={toggleMenu}
                   >
                     Member Portal
@@ -252,7 +252,7 @@ const Navbar: React.FC = () => {
                     handleLogout();
                     toggleMenu();
                   }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                 >
                   Logout
                 </button>
@@ -261,7 +261,7 @@ const Navbar: React.FC = () => {
               !isAuth && (
                 <Link
                   to="/member"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
                   onClick={toggleMenu}
                 >
                   Member Login
