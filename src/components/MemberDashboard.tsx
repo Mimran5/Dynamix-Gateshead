@@ -405,13 +405,19 @@ const MemberDashboard: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: newPlan.price * 100, // Convert to cents
-          currency: 'gbp'
+          amount: Math.round(newPlan.price * 100), // Convert to cents and ensure integer
+          currency: 'gbp',
+          metadata: {
+            membershipId: newMembership,
+            userId: user.uid,
+            type: 'upgrade'
+          }
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create payment intent');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create payment intent');
       }
 
       const { clientSecret } = await response.json();
@@ -446,13 +452,19 @@ const MemberDashboard: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: getMembershipPrice(membershipId) * 100, // Convert to cents
+          amount: Math.round(getMembershipPrice(membershipId) * 100), // Convert to cents and ensure integer
           currency: 'gbp',
+          metadata: {
+            membershipId: membershipId,
+            userId: user.uid,
+            type: 'purchase_for_others'
+          }
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create payment intent');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create payment intent');
       }
 
       const { clientSecret } = await response.json();
@@ -949,46 +961,82 @@ const MemberDashboard: React.FC = () => {
     if (!newPlan || !currentPlan) return;
 
     try {
+      // Update user's membership
       if (newPlan.price > currentPlan.price) {
         // Upgrade - immediate change
         await updateDoc(ref, { 
           membershipType: newMembership,
-          pendingChange: false
+          pendingChange: false,
+          lastPaymentDate: new Date(),
+          paymentHistory: [...(userDoc.paymentHistory || []), {
+            date: new Date(),
+            amount: newPlan.price,
+            type: 'upgrade',
+            from: currentPlan.id,
+            to: newMembership
+          }]
         });
         
         setUserDoc({ 
           ...userDoc, 
           membershipType: newMembership,
-          pendingChange: false
+          pendingChange: false,
+          lastPaymentDate: new Date(),
+          paymentHistory: [...(userDoc.paymentHistory || []), {
+            date: new Date(),
+            amount: newPlan.price,
+            type: 'upgrade',
+            from: currentPlan.id,
+            to: newMembership
+          }]
         });
       } else {
         // Downgrade - set pending change
         await updateDoc(ref, { 
           membershipType: newMembership,
           pendingChange: true,
-          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          lastPaymentDate: new Date(),
+          paymentHistory: [...(userDoc.paymentHistory || []), {
+            date: new Date(),
+            amount: newPlan.price,
+            type: 'downgrade',
+            from: currentPlan.id,
+            to: newMembership
+          }]
         });
         
         setUserDoc({ 
           ...userDoc, 
           membershipType: newMembership,
           pendingChange: true,
-          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          changeEffectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          lastPaymentDate: new Date(),
+          paymentHistory: [...(userDoc.paymentHistory || []), {
+            date: new Date(),
+            amount: newPlan.price,
+            type: 'downgrade',
+            from: currentPlan.id,
+            to: newMembership
+          }]
         });
       }
       
+      // Add to history
+      await addToHistory('payment', {
+        action: newPlan.price > currentPlan.price ? 'upgrade' : 'downgrade',
+        from: currentPlan,
+        to: newPlan,
+        amount: newPlan.price,
+        date: new Date()
+      });
+
+      // Show success message
+      setError('');
       setUpgrading(false);
       setNewMembership('');
       setShowPaymentModal(false);
       setClientSecret('');
-      
-      // Add to history
-      await addToHistory('membership', {
-        action: newPlan.price > currentPlan.price ? 'upgrade' : 'downgrade',
-        from: currentPlan,
-        to: newPlan,
-        effectiveDate: new Date()
-      });
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -998,513 +1046,523 @@ const MemberDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg">
-            <div className="border-b border-gray-200">
-              <nav className="flex -mb-px">
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`${
-                    activeTab === 'profile'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => setActiveTab('membership')}
-                  className={`${
-                    activeTab === 'membership'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                >
-                  Membership
-                </button>
-                <button
-                  onClick={() => setActiveTab('bookings')}
-                  className={`${
-                    activeTab === 'bookings'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                >
-                  Bookings
-                </button>
-                <button
-                  onClick={() => setActiveTab('history')}
-                  className={`${
-                    activeTab === 'history'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                >
-                  History
-                </button>
-                {isAdmin && (
-                  <>
-                    <button
-                      onClick={() => setActiveTab('admin')}
-                      className={`${
-                        activeTab === 'admin'
-                          ? 'border-primary-500 text-primary-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                    >
-                      Admin
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('attendance')}
-                      className={`${
-                        activeTab === 'attendance'
-                          ? 'border-primary-500 text-primary-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                    >
-                      Attendance
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={() => setActiveTab('notifications')}
-                  className={`${
-                    activeTab === 'notifications'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm`}
-                >
-                  Notifications
-                </button>
-              </nav>
-            </div>
-            <main className="mt-8">
-              {isAdmin ? (
-                // Admin View
+      <div className="flex">
+        {/* Vertical Navigation */}
+        <div className="w-64 bg-white shadow-sm h-screen sticky top-0">
+          <div className="p-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">My Portal</h2>
+            <nav className="space-y-1">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`${
+                  activeTab === 'profile'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('membership')}
+                className={`${
+                  activeTab === 'membership'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+              >
+                Membership
+              </button>
+              <button
+                onClick={() => setActiveTab('bookings')}
+                className={`${
+                  activeTab === 'bookings'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+              >
+                Bookings
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`${
+                  activeTab === 'history'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+              >
+                History
+              </button>
+              {isAdmin && (
                 <>
-                  {activeTab === 'admin' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-primary-50 p-6 rounded-lg">
-                          <h3 className="text-lg font-medium text-primary-900">Total Members</h3>
-                          <p className="text-3xl font-bold text-primary-600">{allUsers.length}</p>
-                        </div>
-                        <div className="bg-blue-50 p-6 rounded-lg">
-                          <h3 className="text-lg font-medium text-blue-900">Active Classes</h3>
-                          <p className="text-3xl font-bold text-blue-600">{allClasses.length}</p>
-                        </div>
-                        <div className="bg-purple-50 p-6 rounded-lg">
-                          <h3 className="text-lg font-medium text-purple-900">Today's Bookings</h3>
-                          <p className="text-3xl font-bold text-purple-600">
-                            {allClasses.reduce((acc, c) => acc + (classAttendees[c.id]?.length || 0), 0)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-8">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <button
-                            onClick={() => setShowAddClassModal(true)}
-                            className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
-                          >
-                            <h4 className="font-medium text-gray-900">Add New Class</h4>
-                            <p className="mt-1 text-sm text-gray-500">Create a new class schedule</p>
-                          </button>
-                          <button
-                            onClick={() => setShowEditClassModal(true)}
-                            className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
-                          >
-                            <h4 className="font-medium text-gray-900">Edit Classes</h4>
-                            <p className="mt-1 text-sm text-gray-500">Modify existing class schedules</p>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'bookings' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Class Management</h2>
-                      <div className="mb-6">
-                        <div className="flex space-x-4 overflow-x-auto pb-2">
-                          <button
-                            onClick={() => setSelectedDay('Monday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Monday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Monday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Tuesday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Tuesday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Tuesday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Wednesday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Wednesday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Wednesday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Thursday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Thursday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Thursday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Friday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Friday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Friday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Saturday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Saturday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Saturday
-                          </button>
-                          <button
-                            onClick={() => setSelectedDay('Sunday')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium ${
-                              selectedDay === 'Sunday'
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            Sunday
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {allClasses
-                          .filter((c: Class) => c.day === selectedDay)
-                          .sort((a: Class, b: Class) => a.time.localeCompare(b.time))
-                          .map((classItem: Class) => renderClassCard(classItem))}
-                      </div>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => setActiveTab('admin')}
+                    className={`${
+                      activeTab === 'admin'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                  >
+                    Admin
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('attendance')}
+                    className={`${
+                      activeTab === 'attendance'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                  >
+                    Attendance
+                  </button>
                 </>
-              ) : (
-                // Regular User View
-                <>
-                  {activeTab === 'profile' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">My Portal</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-6">Profile Information</h3>
-                          {editingProfile ? (
-                            <div className="space-y-6">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700">Name</label>
-                                <input
-                                  type="text"
-                                  value={editName}
-                                  onChange={(e) => setEditName(e.target.value)}
-                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700">Contact</label>
-                                <input
-                                  type="text"
-                                  value={editContact}
-                                  onChange={(e) => setEditContact(e.target.value)}
-                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                />
-                              </div>
-                              <div className="flex space-x-4">
-                                <button
-                                  onClick={handleProfileSave}
-                                  disabled={savingProfile}
-                                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                                >
-                                  {savingProfile ? 'Saving...' : 'Save Changes'}
-                                </button>
-                                <button
-                                  onClick={() => setEditingProfile(false)}
-                                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
+              )}
+              <button
+                onClick={() => setActiveTab('notifications')}
+                className={`${
+                  activeTab === 'notifications'
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+              >
+                Notifications
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md"
+              >
+                Logout
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            {isAdmin ? (
+              // Admin View
+              <>
+                {activeTab === 'admin' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-primary-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-medium text-primary-900">Total Members</h3>
+                        <p className="text-3xl font-bold text-primary-600">{allUsers.length}</p>
+                      </div>
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-medium text-blue-900">Active Classes</h3>
+                        <p className="text-3xl font-bold text-blue-600">{allClasses.length}</p>
+                      </div>
+                      <div className="bg-purple-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-medium text-purple-900">Today's Bookings</h3>
+                        <p className="text-3xl font-bold text-purple-600">
+                          {allClasses.reduce((acc, c) => acc + (classAttendees[c.id]?.length || 0), 0)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-8">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button
+                          onClick={() => setShowAddClassModal(true)}
+                          className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
+                        >
+                          <h4 className="font-medium text-gray-900">Add New Class</h4>
+                          <p className="mt-1 text-sm text-gray-500">Create a new class schedule</p>
+                        </button>
+                        <button
+                          onClick={() => setShowEditClassModal(true)}
+                          className="p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
+                        >
+                          <h4 className="font-medium text-gray-900">Edit Classes</h4>
+                          <p className="mt-1 text-sm text-gray-500">Modify existing class schedules</p>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'bookings' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Class Management</h2>
+                    <div className="mb-6">
+                      <div className="flex space-x-4 overflow-x-auto pb-2">
+                        <button
+                          onClick={() => setSelectedDay('Monday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Monday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Monday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Tuesday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Tuesday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Tuesday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Wednesday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Wednesday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Wednesday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Thursday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Thursday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Thursday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Friday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Friday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Friday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Saturday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Saturday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Saturday
+                        </button>
+                        <button
+                          onClick={() => setSelectedDay('Sunday')}
+                          className={`px-4 py-2 rounded-md text-sm font-medium ${
+                            selectedDay === 'Sunday'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Sunday
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {allClasses
+                        .filter((c: Class) => c.day === selectedDay)
+                        .sort((a: Class, b: Class) => a.time.localeCompare(b.time))
+                        .map((classItem: Class) => renderClassCard(classItem))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Regular User View
+              <>
+                {activeTab === 'profile' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8">My Portal</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-6">Profile Information</h3>
+                        {editingProfile ? (
+                          <div className="space-y-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">Name</label>
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                              />
                             </div>
-                          ) : (
-                            <div className="space-y-6">
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Name</p>
-                                <p className="mt-1 text-base text-gray-900">{userDoc.name}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Email</p>
-                                <p className="mt-1 text-base text-gray-900">{userDoc.email}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-500">Contact</p>
-                                <p className="mt-1 text-base text-gray-900">{userDoc.contact}</p>
-                              </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">Contact</label>
+                              <input
+                                type="text"
+                                value={editContact}
+                                onChange={(e) => setEditContact(e.target.value)}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                              />
+                            </div>
+                            <div className="flex space-x-4">
                               <button
-                                onClick={() => setEditingProfile(true)}
+                                onClick={handleProfileSave}
+                                disabled={savingProfile}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                              >
+                                {savingProfile ? 'Saving...' : 'Save Changes'}
+                              </button>
+                              <button
+                                onClick={() => setEditingProfile(false)}
                                 className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                               >
-                                Edit Profile
+                                Cancel
                               </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Name</p>
+                              <p className="mt-1 text-base text-gray-900">{userDoc.name}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Email</p>
+                              <p className="mt-1 text-base text-gray-900">{userDoc.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Contact</p>
+                              <p className="mt-1 text-base text-gray-900">{userDoc.contact}</p>
+                            </div>
+                            <button
+                              onClick={() => setEditingProfile(true)}
+                              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                            >
+                              Edit Profile
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-6">Membership Status</h3>
+                        <div className="bg-gray-50 rounded-lg p-6">
+                          <p className="text-sm font-medium text-gray-500">Current Plan</p>
+                          <p className="mt-1 text-2xl font-semibold text-gray-900">{membership?.name || 'No Plan Selected'}</p>
+                          <p className="mt-4 text-sm font-medium text-gray-500">Classes Remaining</p>
+                          <p className="mt-1 text-2xl font-semibold text-gray-900">
+                            {classesLeft} of {classLimit} ({userDoc?.membershipType || 'No membership type set'})
+                          </p>
+                          {pendingChange && (
+                            <div className="mt-6 p-4 bg-yellow-50 rounded-md">
+                              <p className="text-sm text-yellow-700">
+                                Your membership change will be effective on {userDoc.changeEffectiveDate.toDate().toLocaleDateString()}
+                              </p>
                             </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'notifications' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8">Notification Settings</h2>
+                    <div className="max-w-2xl">
+                      <div className="space-y-6">
                         <div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-6">Membership Status</h3>
-                          <div className="bg-gray-50 rounded-lg p-6">
-                            <p className="text-sm font-medium text-gray-500">Current Plan</p>
-                            <p className="mt-1 text-2xl font-semibold text-gray-900">{membership?.name || 'No Plan Selected'}</p>
-                            <p className="mt-4 text-sm font-medium text-gray-500">Classes Remaining</p>
-                            <p className="mt-1 text-2xl font-semibold text-gray-900">
-                              {classesLeft} of {classLimit} ({userDoc?.membershipType || 'No membership type set'})
-                            </p>
-                            {pendingChange && (
-                              <div className="mt-6 p-4 bg-yellow-50 rounded-md">
-                                <p className="text-sm text-yellow-700">
-                                  Your membership change will be effective on {userDoc.changeEffectiveDate.toDate().toLocaleDateString()}
-                                </p>
-                              </div>
+                          <label className="block text-sm font-medium text-gray-700">Notification Method</label>
+                          <select
+                            value={notifType}
+                            onChange={(e) => setNotifType(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          >
+                            <option value="email">Email</option>
+                            <option value="sms">SMS</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Notification Time</label>
+                          <select
+                            value={notifTime}
+                            onChange={(e) => setNotifTime(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                          >
+                            <option value="24">24 hours before</option>
+                            <option value="12">12 hours before</option>
+                            <option value="6">6 hours before</option>
+                            <option value="1">1 hour before</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={directDebit}
+                            onChange={(e) => setDirectDebit(e.target.checked)}
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                          />
+                          <label className="ml-2 block text-sm text-gray-900">
+                            Enable Direct Debit for recurring classes
+                          </label>
+                        </div>
+                        <button
+                          onClick={handleProfileSave}
+                          disabled={savingProfile}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                        >
+                          {savingProfile ? 'Saving...' : 'Save Settings'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'membership' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Packages</h2>
+                    <p className="text-base text-gray-600 mb-8">
+                      Skip the drop-in fee and save with our flexible monthly packages!
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {memberships.map((plan) => (
+                        <div
+                          key={plan.id}
+                          className={`border rounded-lg p-6 flex flex-col justify-between h-full ${
+                            plan.id === userDoc.membershipType
+                              ? 'border-primary-500 bg-primary-50'
+                              : 'border-gray-200'
+                          }`}
+                        >
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
+                            <div className="mt-4 text-3xl font-bold text-gray-900">£{plan.price}</div>
+                            <div className="mt-1 text-sm text-gray-500">per month</div>
+                            <div className="mt-2 text-sm text-gray-600">
+                              £{plan.costPerClass} per class (Save £{plan.savings}/month)
+                            </div>
+                            <div className="mt-2 text-sm font-medium text-gray-700">
+                              {plan.usage}
+                            </div>
+                            <ul className="mt-6 space-y-3">
+                              {plan.features.map((feature, index) => (
+                                <li key={index} className="flex items-start text-sm text-gray-600">
+                                  <svg className="h-5 w-5 text-primary-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="mt-6 space-y-3">
+                            {plan.id === userDoc.membershipType ? (
+                              <div className="text-sm text-primary-600 font-medium">Current Plan</div>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setNewMembership(plan.id);
+                                    handleUpgrade();
+                                  }}
+                                  disabled={processing}
+                                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                                >
+                                  {plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
+                                </button>
+                                <button
+                                  onClick={() => handlePurchaseForOthers(plan.id)}
+                                  disabled={processing}
+                                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-primary-600 text-sm font-medium rounded-md text-primary-600 bg-white hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                                >
+                                  Purchase for Others
+                                </button>
+                              </>
                             )}
                           </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  )}
-                  {activeTab === 'notifications' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">Notification Settings</h2>
-                      <div className="max-w-2xl">
-                        <div className="space-y-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Notification Method</label>
-                            <select
-                              value={notifType}
-                              onChange={(e) => setNotifType(e.target.value)}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            >
-                              <option value="email">Email</option>
-                              <option value="sms">SMS</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Notification Time</label>
-                            <select
-                              value={notifTime}
-                              onChange={(e) => setNotifTime(e.target.value)}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                            >
-                              <option value="24">24 hours before</option>
-                              <option value="12">12 hours before</option>
-                              <option value="6">6 hours before</option>
-                              <option value="1">1 hour before</option>
-                            </select>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={directDebit}
-                              onChange={(e) => setDirectDebit(e.target.checked)}
-                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                            />
-                            <label className="ml-2 block text-sm text-gray-900">
-                              Enable Direct Debit for recurring classes
-                            </label>
-                          </div>
-                          <button
-                            onClick={handleProfileSave}
-                            disabled={savingProfile}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                          >
-                            {savingProfile ? 'Saving...' : 'Save Settings'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'membership' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Packages</h2>
-                      <p className="text-base text-gray-600 mb-8">
-                        Skip the drop-in fee and save with our flexible monthly packages!
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {memberships.map((plan) => (
-                          <div
-                            key={plan.id}
-                            className={`border rounded-lg p-6 flex flex-col justify-between h-full ${
-                              plan.id === userDoc.membershipType
-                                ? 'border-primary-500 bg-primary-50'
-                                : 'border-gray-200'
-                            }`}
-                          >
-                            <div>
-                              <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
-                              <div className="mt-4 text-3xl font-bold text-gray-900">£{plan.price}</div>
-                              <div className="mt-1 text-sm text-gray-500">per month</div>
-                              <div className="mt-2 text-sm text-gray-600">
-                                £{plan.costPerClass} per class (Save £{plan.savings}/month)
-                              </div>
-                              <div className="mt-2 text-sm font-medium text-gray-700">
-                                {plan.usage}
-                              </div>
-                              <ul className="mt-6 space-y-3">
-                                {plan.features.map((feature, index) => (
-                                  <li key={index} className="flex items-start text-sm text-gray-600">
-                                    <svg className="h-5 w-5 text-primary-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div className="mt-6 space-y-3">
-                              {plan.id === userDoc.membershipType ? (
-                                <div className="text-sm text-primary-600 font-medium">Current Plan</div>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      setNewMembership(plan.id);
-                                      handleUpgrade();
-                                    }}
-                                    disabled={processing}
-                                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                                  >
-                                    {plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
-                                  </button>
-                                  <button
-                                    onClick={() => handlePurchaseForOthers(plan.id)}
-                                    disabled={processing}
-                                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-primary-600 text-sm font-medium rounded-md text-primary-600 bg-white hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                                  >
-                                    Purchase for Others
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'bookings' && (
-                    <div className="bg-white shadow rounded-lg p-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Schedule</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-6">Upcoming Classes</h3>
-                          {upcoming.length === 0 ? (
-                            <p className="text-sm text-gray-500">No upcoming classes booked.</p>
-                          ) : (
-                            <div className="space-y-4">
-                              {upcoming.map((classItem) => (
-                                <div key={classItem.id} className="border rounded-lg p-4 bg-white shadow-sm">
-                                  <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                      <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
-                                      <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
-                                      <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
-                                      {recurringBookings.includes(classItem.id) && (
-                                        <p className="mt-1 text-sm text-primary-600">Recurring booking</p>
-                                      )}
-                                    </div>
-                                    <button
-                                      onClick={() => setShowCancelConfirm(classItem.id)}
-                                      className="ml-4 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md whitespace-nowrap"
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                  {renderClassAttendees(classItem.id)}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-medium text-gray-900 mb-6">Available Classes</h3>
+                  </div>
+                )}
+                {activeTab === 'bookings' && (
+                  <div className="bg-white shadow rounded-lg p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-8">Class Schedule</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-6">Upcoming Classes</h3>
+                        {upcoming.length === 0 ? (
+                          <p className="text-sm text-gray-500">No upcoming classes booked.</p>
+                        ) : (
                           <div className="space-y-4">
-                            {available.map((classItem) => (
+                            {upcoming.map((classItem) => (
                               <div key={classItem.id} className="border rounded-lg p-4 bg-white shadow-sm">
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1">
                                     <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
                                     <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
                                     <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
-                                    {directDebit && (
-                                      <div className="mt-2 flex items-center">
-                                        <input
-                                          type="checkbox"
-                                          id={`recurring-${classItem.id}`}
-                                          checked={recurringClassId === classItem.id}
-                                          onChange={(e) => setRecurringClassId(e.target.checked ? classItem.id : null)}
-                                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                        />
-                                        <label htmlFor={`recurring-${classItem.id}`} className="ml-2 text-sm text-gray-600">
-                                          Book recurring
-                                        </label>
-                                      </div>
+                                    {recurringBookings.includes(classItem.id) && (
+                                      <p className="mt-1 text-sm text-primary-600">Recurring booking</p>
                                     )}
                                   </div>
-                                  <div className="flex space-x-2 ml-4">
-                                    <button
-                                      onClick={() => handleBookClass(classItem.id)}
-                                      disabled={classesLeft <= 0}
-                                      className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap ${
-                                        classesLeft <= 0
-                                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                          : 'bg-primary-600 text-white hover:bg-primary-700'
-                                      }`}
-                                    >
-                                      Book Class
-                                    </button>
-                                  </div>
+                                  <button
+                                    onClick={() => setShowCancelConfirm(classItem.id)}
+                                    className="ml-4 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md whitespace-nowrap"
+                                  >
+                                    Cancel
+                                  </button>
                                 </div>
                                 {renderClassAttendees(classItem.id)}
                               </div>
                             ))}
                           </div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-6">Available Classes</h3>
+                        <div className="space-y-4">
+                          {available.map((classItem) => (
+                            <div key={classItem.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <h4 className="text-lg font-medium text-gray-900">{classItem.name}</h4>
+                                  <p className="mt-1 text-sm text-gray-500">{classItem.day} at {classItem.time}</p>
+                                  <p className="mt-1 text-sm text-gray-500">Instructor: {classItem.instructor}</p>
+                                  {directDebit && (
+                                    <div className="mt-2 flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        id={`recurring-${classItem.id}`}
+                                        checked={recurringClassId === classItem.id}
+                                        onChange={(e) => setRecurringClassId(e.target.checked ? classItem.id : null)}
+                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                      />
+                                      <label htmlFor={`recurring-${classItem.id}`} className="ml-2 text-sm text-gray-600">
+                                        Book recurring
+                                      </label>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex space-x-2 ml-4">
+                                  <button
+                                    onClick={() => handleBookClass(classItem.id)}
+                                    disabled={classesLeft <= 0}
+                                    className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap ${
+                                      classesLeft <= 0
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                                    }`}
+                                  >
+                                    Book Class
+                                  </button>
+                                </div>
+                              </div>
+                              {renderClassAttendees(classItem.id)}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
-                  )}
-                  {activeTab === 'history' && (
-                    <div className="bg-white shadow rounded-lg p-6">
-                      <AttendanceHistory />
-                    </div>
-                  )}
-                </>
-              )}
-            </main>
+                  </div>
+                )}
+                {activeTab === 'history' && (
+                  <div className="bg-white shadow rounded-lg p-6">
+                    <AttendanceHistory />
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
