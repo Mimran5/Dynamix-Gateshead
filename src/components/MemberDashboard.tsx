@@ -14,6 +14,7 @@ import { createCustomer, createSubscription } from '../services/subscriptionServ
 import StripeProvider from './StripeProvider';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import PaymentForm from './PaymentForm';
 
 interface Class {
   id: string;
@@ -31,7 +32,35 @@ interface Booking {
   day: string;
   time: string;
   instructor: string;
-  bookedAt: string;
+  bookedAt: Date;
+}
+
+interface UserData {
+  email: string;
+  name: string;
+  contact: string;
+  membershipType: string;
+  pendingChange: boolean;
+  changeEffectiveDate?: Date;
+  lastPaymentDate?: Date;
+  paymentHistory?: Array<{
+    date: Date;
+    amount: number;
+    type: string;
+    from: string;
+    to: string;
+  }>;
+  recurringBookings?: string[];
+  bookings?: Booking[];
+  history?: Array<{
+    type: string;
+    date: Date;
+    details: any;
+  }>;
+  notifType?: string;
+  notifTime?: string;
+  directDebit?: boolean;
+  createdAt: Date;
 }
 
 // Initialize Stripe
@@ -48,9 +77,9 @@ const getClassLimit = (membershipType: string) => {
 
 const MemberDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [userDoc, setUserDoc] = useState<any>(null);
+  const [userDoc, setUserDoc] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [upgrading, setUpgrading] = useState(false);
   const [newMembership, setNewMembership] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -113,7 +142,8 @@ const MemberDashboard: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [showEditClassModal, setShowEditClassModal] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
+  const [clientSecret, setClientSecret] = useState<string>('');
+  const [paymentIntentId, setPaymentIntentId] = useState<string>('');
 
   const isAdmin = user?.email === 'yudit@dynamixdga.com';
 
@@ -132,22 +162,51 @@ const MemberDashboard: React.FC = () => {
       .then((snap) => {
         if (!snap.exists()) {
           // Create user document if it doesn't exist
-          const defaultUserData = {
-            email: user.email,
+          const defaultUserData: UserData = {
+            email: user.email || '',
             name: '',
             contact: '',
             membershipType: 'basic',
+            pendingChange: false,
             bookings: [],
             recurringBookings: [],
             history: [],
-            createdAt: new Date()
+            createdAt: new Date(),
+            paymentHistory: [],
           };
           setDoc(doc(db, 'users', user.uid), defaultUserData).then(() => {
             setUserDoc(defaultUserData);
-        setLoading(false);
+            setLoading(false);
           });
         } else {
-          const userData = snap.data();
+          const data = snap.data();
+          const userData: UserData = {
+            email: data.email || '',
+            name: data.name || '',
+            contact: data.contact || '',
+            membershipType: data.membershipType || 'basic',
+            pendingChange: data.pendingChange || false,
+            bookings: (data.bookings || []).map((b: any) => ({
+              classId: b.classId || '',
+              className: b.className || '',
+              day: b.day || '',
+              time: b.time || '',
+              instructor: b.instructor || '',
+              bookedAt: b.bookedAt?.toDate ? b.bookedAt.toDate() : new Date(),
+            })),
+            recurringBookings: data.recurringBookings || [],
+            history: data.history || [],
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            changeEffectiveDate: data.changeEffectiveDate?.toDate ? data.changeEffectiveDate.toDate() : undefined,
+            lastPaymentDate: data.lastPaymentDate?.toDate ? data.lastPaymentDate.toDate() : undefined,
+            paymentHistory: data.paymentHistory?.map((p: any) => ({
+              ...p,
+              date: p.date?.toDate ? p.date.toDate() : new Date(),
+            })) || [],
+            notifType: data.notifType,
+            notifTime: data.notifTime,
+            directDebit: data.directDebit,
+          };
           setUserDoc(userData);
           setLoading(false);
         }
@@ -219,8 +278,8 @@ const MemberDashboard: React.FC = () => {
   const classLimit = userDoc ? getClassLimit(userDoc.membershipType) : 0;
   const bookings = userDoc?.bookings || [];
   const classesLeft = classLimit - bookings.length;
-  const upcoming = allClasses.filter(c => bookings.includes(c.id));
-  const available = allClasses.filter(c => !bookings.includes(c.id));
+  const upcoming = allClasses.filter(c => bookings.some((b: Booking) => b.classId === c.id));
+  const available = allClasses.filter(c => !bookings.some((b: Booking) => b.classId === c.id));
 
   useEffect(() => {
     const fetchClassAttendees = async () => {
@@ -234,6 +293,66 @@ const MemberDashboard: React.FC = () => {
 
     fetchClassAttendees();
   }, [upcoming, available, getClassAttendees]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return;
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          const userData: UserData = {
+            email: data.email || '',
+            name: data.name || '',
+            contact: data.contact || '',
+            membershipType: data.membershipType || '',
+            pendingChange: data.pendingChange || false,
+            bookings: (data.bookings || []).map((b: any) => ({
+              classId: b.classId || '',
+              className: b.className || '',
+              day: b.day || '',
+              time: b.time || '',
+              instructor: b.instructor || '',
+              bookedAt: b.bookedAt?.toDate ? b.bookedAt.toDate() : new Date(),
+            })),
+            recurringBookings: data.recurringBookings || [],
+            history: data.history || [],
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+            changeEffectiveDate: data.changeEffectiveDate?.toDate ? data.changeEffectiveDate.toDate() : undefined,
+            lastPaymentDate: data.lastPaymentDate?.toDate ? data.lastPaymentDate.toDate() : undefined,
+            paymentHistory: data.paymentHistory?.map((p: any) => ({
+              ...p,
+              date: p.date?.toDate ? p.date.toDate() : new Date(),
+            })) || [],
+            notifType: data.notifType,
+            notifTime: data.notifTime,
+            directDebit: data.directDebit,
+          };
+          setUserDoc(userData);
+        } else {
+          // Create new user document with default values
+          const newUserData: UserData = {
+            email: user.email || '',
+            name: '',
+            contact: '',
+            membershipType: '',
+            pendingChange: false,
+            bookings: [],
+            recurringBookings: [],
+            history: [],
+            createdAt: new Date(),
+            paymentHistory: [],
+          };
+          await setDoc(doc(db, 'users', user.uid), newUserData);
+          setUserDoc(newUserData);
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   if (!user) {
     return null; // Don't render anything if not authenticated
@@ -270,148 +389,61 @@ const MemberDashboard: React.FC = () => {
 
   const handleBookClass = async (classId: string) => {
     if (!user) return;
-    
-    try {
-      const classRef = doc(db, 'classes', classId);
-      const classDoc = await getDoc(classRef);
-      
-      if (!classDoc.exists()) {
-        throw new Error('Class not found');
-      }
-
-      const classData = classDoc.data();
-      const attendees = classData.attendees || [];
-      
-      // Check if class is full
-      if (attendees.length >= classData.capacity) {
-        throw new Error('Class is full');
-      }
-
-      // Check if user is already booked
-      if (attendees.some((a: any) => a.userId === user.uid)) {
-        throw new Error('You are already booked for this class');
-      }
-
-      // Get user data
-      const userRef = doc(db, 'users', user.uid);
-      const userDocSnap = await getDoc(userRef);
-      const userData = userDocSnap.data();
-
-      // Add attendee details
-      const attendeeData = {
-        userId: user.uid,
-        name: attendeeName || userData?.name || 'Anonymous',
-        email: attendeeEmail || user.email,
-        phone: attendeePhone || userData?.contact || '',
-        bookedAt: new Date().toISOString()
-      };
-
-      await updateDoc(classRef, {
-        attendees: [...attendees, attendeeData]
-      });
-
-      // Update user's bookings
-      const bookings = userData?.bookings || [];
-
-      await updateDoc(userRef, {
-        bookings: [...bookings, {
-          classId,
-          className: classData.name,
-          day: classData.day,
-          time: classData.time,
-          instructor: classData.instructor,
-          bookedAt: new Date().toISOString()
-        }]
-      });
-
-      // Send email confirmation
-      const emailData = {
-        to: attendeeEmail || user.email,
-        subject: `Class Booking Confirmation - ${classData.name}`,
-        text: `You have successfully booked ${classData.name} on ${classData.day} at ${classData.time} with ${classData.instructor}.`,
-        html: `
-          <h2>Booking Confirmation</h2>
-          <p>You have successfully booked the following class:</p>
-          <ul>
-            <li><strong>Class:</strong> ${classData.name}</li>
-            <li><strong>Day:</strong> ${classData.day}</li>
-            <li><strong>Time:</strong> ${classData.time}</li>
-            <li><strong>Instructor:</strong> ${classData.instructor}</li>
-          </ul>
-          <p>We look forward to seeing you!</p>
-        `
-      };
-
-      // Send email using your email service
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emailData),
-      });
-
-      setShowBookingForm(null);
-      setAttendeeName('');
-      setAttendeeEmail('');
-      setAttendeePhone('');
-      
-      // Refresh user data
-      const updatedUserDoc = await getDoc(userRef);
-      setUserDoc(updatedUserDoc.data());
-    } catch (error: any) {
-      console.error('Error booking class:', error);
-      setError(error.message);
-    }
+    const ref = doc(db, 'users', user.uid);
+    const newBooking: Booking = {
+      classId,
+      className: '', // This will be populated from the class data
+      day: '', // This will be populated from the class data
+      time: '', // This will be populated from the class data
+      instructor: '', // This will be populated from the class data
+      bookedAt: new Date(),
+    };
+    const updated = [...(userDoc?.bookings || []), newBooking];
+    await updateDoc(ref, { bookings: updated });
+    setUserDoc({ ...userDoc!, bookings: updated });
   };
 
-  const handleCancel = async (classId: string) => {
+  const handleCancelBooking = async (classId: string) => {
+    if (!user) return;
     const ref = doc(db, 'users', user.uid);
-    const updated = bookings.filter((id: string) => id !== classId);
+    const updated = (userDoc?.bookings || []).filter((b: Booking) => b.classId !== classId);
     await updateDoc(ref, { bookings: updated });
-    setUserDoc({ ...userDoc, bookings: updated });
-    setShowCancelConfirm(null);
-
-    // Add to history
-    const classDetails = allClasses.find(c => c.id === classId);
-    await addToHistory('booking', {
-      action: 'cancel',
-      class: classDetails
-    });
+    setUserDoc({ ...userDoc!, bookings: updated });
   };
 
   const handleCancelRecurring = async (classId: string) => {
+    if (!user) return;
     const ref = doc(db, 'users', user.uid);
-    const updated = recurringBookings.filter((id: string) => id !== classId);
+    const updated = (userDoc?.recurringBookings || []).filter((id: string) => id !== classId);
     await updateDoc(ref, { recurringBookings: updated });
-    setUserDoc({ ...userDoc, recurringBookings: updated });
-    setRecurringBookings(updated);
-    setShowRecurringCancelConfirm(null);
+    setUserDoc({ ...userDoc!, recurringBookings: updated });
   };
 
   const handleUpgrade = async () => {
-    if (!newMembership) return;
-    const newPlan = memberships.find(m => m.id === newMembership);
-    const currentPlan = memberships.find(m => m.id === userDoc.membershipType);
-    
-    if (!newPlan || !currentPlan) return;
+    if (!newMembership) {
+      setError('Please select a membership plan');
+      return;
+    }
 
-    setProcessing(true);
     try {
-      // Create payment intent first
+      setProcessing(true);
+      setError(null);
+
+      // Get the selected membership plan
+      const selectedPlan = memberships.find(m => m.id === newMembership);
+      if (!selectedPlan) {
+        throw new Error('Selected plan not found');
+      }
+
+      // Create payment intent
       const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: Math.round(newPlan.price * 100), // Convert to cents and ensure integer
+          amount: selectedPlan.price * 100, // Convert to cents
           currency: 'gbp',
-          metadata: {
-            membershipId: newMembership,
-            userId: user.uid,
-            type: 'upgrade'
-          }
         }),
       });
 
@@ -420,14 +452,16 @@ const MemberDashboard: React.FC = () => {
         throw new Error(error.message || 'Failed to create payment intent');
       }
 
-      const { clientSecret } = await response.json();
-      
-      // Show payment modal with Stripe
-      setClientSecret(clientSecret);
+      const { clientSecret, paymentIntentId } = await response.json();
+
+      // Show payment modal
       setShowPaymentModal(true);
-      setUpgrading(true);
-    } catch (error: any) {
-      setError(error.message);
+      setPaymentIntentId(paymentIntentId);
+      setClientSecret(clientSecret);
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
+    } finally {
       setProcessing(false);
     }
   };
@@ -929,22 +963,30 @@ const MemberDashboard: React.FC = () => {
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Complete Payment</h3>
-          {clientSecret && (
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <StripeProvider onSuccess={onClose} onError={onError} />
-            </Elements>
-          )}
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Complete Payment</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Please enter your payment details to complete the transaction.
+          </p>
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <PaymentForm
+              clientSecret={clientSecret}
+              onSuccess={() => {
+                onClose();
+                setClientSecret('');
+                setPaymentIntentId('');
+                // Refresh user data
+                fetchUserData();
+              }}
+              onError={(error) => {
+                onError(error);
+                setShowPaymentModal(false);
+                setClientSecret('');
+                setPaymentIntentId('');
+              }}
+            />
+          </Elements>
         </div>
       </div>
     );
@@ -1044,21 +1086,77 @@ const MemberDashboard: React.FC = () => {
     }
   };
 
+  const fetchUserData = async () => {
+    if (!user) return;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const userData: UserData = {
+          email: data.email || '',
+          name: data.name || '',
+          contact: data.contact || '',
+          membershipType: data.membershipType || '',
+          pendingChange: data.pendingChange || false,
+          bookings: (data.bookings || []).map((b: any) => ({
+            classId: b.classId || '',
+            className: b.className || '',
+            day: b.day || '',
+            time: b.time || '',
+            instructor: b.instructor || '',
+            bookedAt: b.bookedAt?.toDate ? b.bookedAt.toDate() : new Date(),
+          })),
+          recurringBookings: data.recurringBookings || [],
+          history: data.history || [],
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+          changeEffectiveDate: data.changeEffectiveDate?.toDate ? data.changeEffectiveDate.toDate() : undefined,
+          lastPaymentDate: data.lastPaymentDate?.toDate ? data.lastPaymentDate.toDate() : undefined,
+          paymentHistory: data.paymentHistory?.map((p: any) => ({
+            ...p,
+            date: p.date?.toDate ? p.date.toDate() : new Date(),
+          })) || [],
+          notifType: data.notifType,
+          notifTime: data.notifTime,
+          directDebit: data.directDebit,
+        };
+        setUserDoc(userData);
+      } else {
+        // Create new user document with default values
+        const newUserData: UserData = {
+          email: user.email || '',
+          name: '',
+          contact: '',
+          membershipType: '',
+          pendingChange: false,
+          bookings: [],
+          recurringBookings: [],
+          history: [],
+          createdAt: new Date(),
+          paymentHistory: [],
+        };
+        await setDoc(doc(db, 'users', user.uid), newUserData);
+        setUserDoc(newUserData);
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex">
         {/* Vertical Navigation */}
-        <div className="w-64 bg-white shadow-sm h-screen sticky top-0">
-          <div className="p-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">My Portal</h2>
-            <nav className="space-y-1">
+        <div className="w-72 bg-white shadow-sm h-screen sticky top-0">
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">My Portal</h2>
+            <nav className="space-y-2">
               <button
                 onClick={() => setActiveTab('profile')}
                 className={`${
                   activeTab === 'profile'
                     ? 'bg-primary-50 text-primary-600'
                     : 'text-gray-700 hover:bg-gray-50'
-                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
               >
                 Profile
               </button>
@@ -1068,7 +1166,7 @@ const MemberDashboard: React.FC = () => {
                   activeTab === 'membership'
                     ? 'bg-primary-50 text-primary-600'
                     : 'text-gray-700 hover:bg-gray-50'
-                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
               >
                 Membership
               </button>
@@ -1078,7 +1176,7 @@ const MemberDashboard: React.FC = () => {
                   activeTab === 'bookings'
                     ? 'bg-primary-50 text-primary-600'
                     : 'text-gray-700 hover:bg-gray-50'
-                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
               >
                 Bookings
               </button>
@@ -1088,7 +1186,7 @@ const MemberDashboard: React.FC = () => {
                   activeTab === 'history'
                     ? 'bg-primary-50 text-primary-600'
                     : 'text-gray-700 hover:bg-gray-50'
-                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
               >
                 History
               </button>
@@ -1100,7 +1198,7 @@ const MemberDashboard: React.FC = () => {
                       activeTab === 'admin'
                         ? 'bg-primary-50 text-primary-600'
                         : 'text-gray-700 hover:bg-gray-50'
-                    } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                    } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
                     Admin
                   </button>
@@ -1110,7 +1208,7 @@ const MemberDashboard: React.FC = () => {
                       activeTab === 'attendance'
                         ? 'bg-primary-50 text-primary-600'
                         : 'text-gray-700 hover:bg-gray-50'
-                    } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                    } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
                     Attendance
                   </button>
@@ -1122,16 +1220,18 @@ const MemberDashboard: React.FC = () => {
                   activeTab === 'notifications'
                     ? 'bg-primary-50 text-primary-600'
                     : 'text-gray-700 hover:bg-gray-50'
-                } w-full text-left px-4 py-2 text-sm font-medium rounded-md`}
+                } w-full text-left px-6 py-3 text-sm font-medium rounded-md transition-colors duration-150`}
               >
                 Notifications
               </button>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md"
-              >
-                Logout
-              </button>
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-6 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors duration-150"
+                >
+                  Logout
+                </button>
+              </div>
             </nav>
           </div>
         </div>
@@ -1139,6 +1239,11 @@ const MemberDashboard: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
             {isAdmin ? (
               // Admin View
               <>
@@ -1345,10 +1450,10 @@ const MemberDashboard: React.FC = () => {
                           <p className="mt-1 text-2xl font-semibold text-gray-900">
                             {classesLeft} of {classLimit} ({userDoc?.membershipType || 'No membership type set'})
                           </p>
-                          {pendingChange && (
+                          {userDoc?.changeEffectiveDate && (
                             <div className="mt-6 p-4 bg-yellow-50 rounded-md">
                               <p className="text-sm text-yellow-700">
-                                Your membership change will be effective on {userDoc.changeEffectiveDate.toDate().toLocaleDateString()}
+                                Your membership change will be effective on {userDoc.changeEffectiveDate.toLocaleDateString()}
                               </p>
                             </div>
                           )}
@@ -1458,7 +1563,7 @@ const MemberDashboard: React.FC = () => {
                                   disabled={processing}
                                   className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                                 >
-                                  {plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
+                                  {processing ? 'Processing...' : plan.price > membership.price ? 'Upgrade' : 'Downgrade'}
                                 </button>
                                 <button
                                   onClick={() => handlePurchaseForOthers(plan.id)}
@@ -1568,17 +1673,19 @@ const MemberDashboard: React.FC = () => {
       </div>
       
       {/* Add payment modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={handlePaymentSuccess}
-        clientSecret={clientSecret}
-        onError={(error) => {
-          setError(error);
-          setShowPaymentModal(false);
-          setClientSecret('');
-          setProcessing(false);
-        }}
-      />
+      {showPaymentModal && clientSecret && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={handlePaymentSuccess}
+          clientSecret={clientSecret}
+          onError={(error) => {
+            setError(error);
+            setShowPaymentModal(false);
+            setClientSecret('');
+            setPaymentIntentId('');
+          }}
+        />
+      )}
     </div>
   );
 };
