@@ -35,7 +35,7 @@ interface Booking {
 }
 
 // Initialize Stripe
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY || '');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 const getClassLimit = (membershipType: string) => {
   console.log('Current membership type:', membershipType); // Add debugging
@@ -426,16 +426,36 @@ const MemberDashboard: React.FC = () => {
     }
   };
 
+  const getMembershipPrice = (membershipId: string): number => {
+    const priceMap: { [key: string]: number } = {
+      'basic': 29.99,
+      'standard': 49.99,
+      'family': 79.99
+    };
+    return priceMap[membershipId] || 0;
+  };
+
   const handlePurchaseForOthers = async (membershipId: string) => {
     if (!user) return;
 
     setProcessing(true);
     try {
-      // Create or get customer
-      const { customerId } = await createCustomer(user.email || '', user.email?.split('@')[0] || '');
-      const priceId = getPriceIdForMembership(membershipId);
-      const { clientSecret } = await createSubscription(customerId, priceId);
-      
+      const response = await fetch('/api/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: getMembershipPrice(membershipId) * 100, // Convert to cents
+          currency: 'gbp',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create payment intent');
+      }
+
+      const { clientSecret } = await response.json();
       setClientSecret(clientSecret);
       setShowPaymentModal(true);
     } catch (error: any) {
@@ -1374,7 +1394,7 @@ const MemberDashboard: React.FC = () => {
                                   <button
                                     onClick={() => {
                                       setNewMembership(plan.id);
-                                      setUpgrading(true);
+                                      handleUpgrade();
                                     }}
                                     disabled={processing}
                                     className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
