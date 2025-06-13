@@ -10,41 +10,34 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
-// Get all PNG files from the input directory
+// Get all PNG files from input directory
 const files = fs.readdirSync(inputDir).filter(file => file.endsWith('.png'));
 
 async function optimizeImages() {
   for (const file of files) {
     const inputPath = path.join(inputDir, file);
     const outputPath = path.join(outputDir, file);
-
+    
     try {
-      // Get the original file size
+      // Get original file size
       const stats = fs.statSync(inputPath);
-      const originalSize = stats.size;
-
-      // Optimize the image
+      const originalSize = stats.size / 1024; // Convert to KB
+      
+      // Optimize image
       await sharp(inputPath)
-        .resize(800, 600, { // Resize to a reasonable size
-          fit: 'cover',
-          position: 'center'
-        })
-        .png({ // Convert to PNG with optimization
-          quality: 80,
-          compressionLevel: 9
-        })
+        .resize(800, 600, { fit: 'inside', withoutEnlargement: true })
+        .png({ quality: 80, compressionLevel: 9 })
         .toFile(outputPath);
-
-      // Get the optimized file size
+      
+      // Get optimized file size
       const optimizedStats = fs.statSync(outputPath);
-      const optimizedSize = optimizedStats.size;
-      const savings = ((originalSize - optimizedSize) / originalSize * 100).toFixed(2);
-
-      console.log(`${file}: ${(originalSize / 1024).toFixed(2)}KB -> ${(optimizedSize / 1024).toFixed(2)}KB (${savings}% smaller)`);
+      const optimizedSize = optimizedStats.size / 1024; // Convert to KB
+      
+      console.log(`${file}: ${originalSize.toFixed(2)}KB -> ${optimizedSize.toFixed(2)}KB (${((1 - optimizedSize/originalSize) * 100).toFixed(2)}% smaller)`);
     } catch (error) {
       console.error(`Error processing ${file}:`, error);
     }
   }
 }
 
-optimizeImages().catch(console.error); 
+optimizeImages(); 
