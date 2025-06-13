@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import stripeRoutes from './routes/stripe';
 
 dotenv.config();
 
@@ -18,6 +19,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Use stripe routes
+app.use('/api/stripe', stripeRoutes);
 
 // Create a customer
 app.post('/api/create-customer', async (req, res) => {

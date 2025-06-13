@@ -9,7 +9,8 @@ export const classTypes: ClassType[] = [
   { id: 'yoga', name: 'Yoga', color: '#7E22CE' },
   { id: 'pilates', name: 'Pilates', color: '#F97316' },
   { id: 'gymnastics', name: 'Gymnastics', color: '#2563EB' },
-  { id: 'fitness', name: 'Fitness', color: '#DC2626' },
+  { id: 'kickboxing', name: 'Kickboxing', color: '#DC2626' },
+  { id: 'aerobics', name: 'Aerobics', color: '#DB2777' },
   { id: 'karate', name: 'Karate', color: '#059669' },
 ];
 
@@ -57,7 +58,7 @@ export const classes: Class[] = [
   {
     id: '3',
     name: 'Ladies Kickboxing',
-    type: 'fitness',
+    type: 'kickboxing',
     description: 'High-energy kickboxing class for ladies aged 20+, combining martial arts techniques with cardio workout.',
     instructor: 'Olivia Appleby',
     day: 'Monday',
@@ -70,7 +71,7 @@ export const classes: Class[] = [
   {
     id: '12',
     name: 'Ladies Kickboxing',
-    type: 'fitness',
+    type: 'kickboxing',
     description: 'Beginner-friendly kickboxing class for ladies aged 20+, focusing on basic techniques and fitness.',
     instructor: 'Olivia Appleby',
     day: 'Monday',
@@ -148,7 +149,7 @@ export const classes: Class[] = [
   {
     id: '8',
     name: 'Year 7 Aerobics',
-    type: 'fitness',
+    type: 'aerobics',
     description: 'High-energy aerobics class specifically designed for Year 7 students.',
     instructor: 'Perla Ehrentreu',
     day: 'Thursday',
@@ -187,7 +188,7 @@ export const classes: Class[] = [
   {
     id: '14',
     name: 'Aerobics 18+',
-    type: 'fitness',
+    type: 'aerobics',
     description: 'Aerobics class for adults 18+ focusing on cardio and fun routines.',
     instructor: 'TBA',
     day: 'Sunday',
