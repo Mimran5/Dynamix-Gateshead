@@ -20,6 +20,14 @@ const ClassesOverview: React.FC = () => {
               className="bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-xl"
             >
               <div className="h-48 overflow-hidden relative bg-gray-100">
+                <img
+                  src={`/images/classes/optimized/${type.id.toLowerCase()}.png`}
+                  alt={type.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/images/classes/optimized/default.png';
+                  }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                 <div 
                   className="absolute bottom-0 left-0 w-full p-4 text-white"
@@ -56,8 +64,14 @@ function getDescriptionForType(type: string): string {
       return 'Find balance and inner peace with our diverse range of yoga practices.';
     case 'pilates':
       return 'Strengthen your core and improve posture with our Pilates sessions.';
-    case 'fitness':
-      return 'Boost your overall fitness with our dynamic and engaging workout classes.';
+    case 'dance':
+      return 'Express yourself through movement with our dynamic dance classes.';
+    case 'kickboxing':
+      return 'Build strength and confidence with our high-energy kickboxing sessions.';
+    case 'aerobics':
+      return 'Get your heart pumping with our fun and energetic aerobics classes.';
+    case 'karate':
+      return 'Learn discipline and self-defense through traditional karate training.';
     default:
       return '';
   }
