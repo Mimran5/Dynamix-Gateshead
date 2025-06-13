@@ -883,7 +883,7 @@ const MemberDashboard: React.FC = () => {
     const isFull = attendees.length >= classItem.capacity;
     const isAdmin = user?.email === 'yudit@dynamixdga.com';
     const classColor = getClassColor(classItem.name);
-    const classImage = `/images/classes/${classItem.type.toLowerCase()}.png`;
+    const classImage = `/images/classes/optimized/${classItem.type.toLowerCase()}.png`;
 
     return (
       <div key={classItem.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -893,7 +893,7 @@ const MemberDashboard: React.FC = () => {
             alt={classItem.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.currentTarget.src = '/images/classes/default.png';
+              e.currentTarget.src = '/images/classes/optimized/default.png';
             }}
           />
           <div className={`absolute top-0 left-0 p-2 ${classColor}`}>
