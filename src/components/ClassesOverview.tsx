@@ -1,6 +1,6 @@
 import React from 'react';
 import { classTypes } from '../data/classes';
-import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ClassesOverview: React.FC = () => {
   return (
@@ -17,36 +17,38 @@ const ClassesOverview: React.FC = () => {
           {classTypes.map((type) => (
             <div 
               key={type.id}
-              className="bg-white rounded-xl overflow-hidden shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-xl"
+              className="relative overflow-hidden rounded-lg shadow-lg group"
             >
-              <div className="h-48 overflow-hidden relative bg-gray-100">
-                <img
-                  src={`/images/classes/optimized/${type.id.toLowerCase()}.png`}
-                  alt={type.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = '/images/classes/optimized/default.png';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                <div 
-                  className="absolute bottom-0 left-0 w-full p-4 text-white"
-                  style={{ backgroundColor: `${type.color}20` }}
+              <img
+                src={`/images/classes/optimized/${type.id}.png`}
+                alt={type.name}
+                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                onError={(e) => {
+                  e.currentTarget.src = '/images/classes/optimized/default.png';
+                }}
+              />
+              <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                <h3 className="text-xl font-bold text-white mb-2 drop-shadow-lg">{type.name}</h3>
+                <p className="text-white text-sm mb-4 drop-shadow-lg">{getDescriptionForType(type.id)}</p>
+                <Link
+                  to="/classes"
+                  className="inline-flex items-center text-white hover:text-primary-400 transition-colors drop-shadow-lg"
                 >
-                  <h3 className="text-2xl font-bold">{type.name}</h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600 mb-4">{getDescriptionForType(type.id)}</p>
-                <div className="flex items-center">
-                  <a 
-                    href="#timetable" 
-                    className="text-teal-600 font-medium inline-flex items-center hover:text-teal-800 transition-colors"
+                  View Schedule
+                  <svg
+                    className="w-4 h-4 ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    View Schedule
-                    <ArrowRight size={16} className="ml-1" />
-                  </a>
-                </div>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </Link>
               </div>
             </div>
           ))}
