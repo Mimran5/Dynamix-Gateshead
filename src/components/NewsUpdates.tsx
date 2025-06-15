@@ -52,6 +52,17 @@ const NewsUpdates: React.FC = () => {
                 {expandedNews === item.id ? (
                   <div className="text-gray-600 mb-4 animate-fadeIn">
                     <p>{item.content}</p>
+                    {item.action && (
+                      <a
+                        href={item.action.link}
+                        target={item.action.link.startsWith('http') ? '_blank' : undefined}
+                        rel={item.action.link.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className="mt-4 inline-flex items-center bg-primary-600 text-white px-4 py-2 rounded-full font-medium hover:bg-primary-700 transition-colors"
+                      >
+                        {item.action.text}
+                        <ArrowRight size={16} className="ml-2" />
+                      </a>
+                    )}
                   </div>
                 ) : (
                   <p className="text-gray-600 mb-4">{item.excerpt}</p>

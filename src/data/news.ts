@@ -6,6 +6,10 @@ export interface NewsItem {
   content: string;
   image?: string;
   category: 'announcement' | 'event' | 'promotion' | 'class';
+  action?: {
+    text: string;
+    link: string;
+  };
 }
 
 export const newsItems: NewsItem[] = [
@@ -37,11 +41,15 @@ export const newsItems: NewsItem[] = [
   },
   {
     id: '4',
-    title: 'Refer a Friend Promotion',
-    date: '2025-02-20',
-    excerpt: 'Bring a friend to class and you both receive 20% off your next month\'s membership.',
-    content: 'Share the joy of movement with friends and save! Throughout April, when you refer a friend who signs up for any membership package, you\'ll both receive 20% off your next month\'s membership fee. There\'s no limit to how many friends you can refer, so the savings can really add up! To participate, simply have your friend mention your name when they register. We believe fitness is better with friends, and we\'re excited to welcome new faces to our community. Terms and conditions apply.',
-    category: 'promotion'
+    title: 'Membership Survey - Win Prizes!',
+    date: '2024-03-10',
+    excerpt: 'Complete our survey for a chance to win one of three amazing prizes. Help shape the future of Dynamix!',
+    content: 'We want to hear from you! Take our quick survey to help us understand your fitness goals and preferences. Your feedback will help us improve our services and create better membership options. As a thank you, we\'re giving away three fantastic prizes: 1st Prize - 3 months free membership, 2nd Prize - 1 month free membership, 3rd Prize - £50 class credit. The survey takes just 5 minutes to complete. Winners will be announced on April 1st, 2024.',
+    category: 'promotion',
+    action: {
+      text: 'Take Survey',
+      link: 'https://dynamix/bio.form'
+    }
   },
   {
     id: '5',
@@ -51,5 +59,26 @@ export const newsItems: NewsItem[] = [
     content: 'We\'re expanding our offerings for young athletes! Our new comprehensive kids\' gymnastics program launches March 1st with dedicated classes for ages 4-6, 7-9, and 10-12. Each age group will focus on developmentally appropriate skills, from basic coordination and tumbling for the youngest group to more advanced techniques for older children. Our expanded program includes both recreational classes and a pre-competitive track for those interested in pursuing gymnastics more seriously. All classes are taught by certified gymnastics instructors in our newly equipped gymnasium. Registration is now open!',
     image: 'https://images.pexels.com/photos/3976318/pexels-photo-3976318.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     category: 'class'
+  },
+  {
+    id: '6',
+    title: 'Summer Gymnastics Camp 2024',
+    date: '2024-03-15',
+    excerpt: 'Join our exciting summer gymnastics camp for beginners and intermediate levels. Limited spots available!',
+    content: 'We\'re thrilled to announce our first-ever Summer Gymnastics Camp! This intensive program will run for two weeks during the summer break, offering young athletes the opportunity to develop their skills in a fun and supportive environment. The camp will include daily training sessions, skill development workshops, and a showcase performance at the end. Perfect for ages 7-14, with separate groups for beginners and intermediate levels. Early registration is now open with a special discount for the first 20 participants!',
+    image: '/images/classes/optimized/gymnastics.png',
+    category: 'event',
+    action: {
+      text: 'Register Interest',
+      link: '/dashboard?tab=bookings'
+    }
+  },
+  {
+    id: '7',
+    title: 'Refer a Friend Promotion',
+    date: '2024-02-20',
+    excerpt: 'Bring a friend to class and you both receive 20% off your next month\'s membership.',
+    content: 'Share the joy of movement with friends and save! Throughout April, when you refer a friend who signs up for any membership package, you\'ll both receive 20% off your next month\'s membership fee. There\'s no limit to how many friends you can refer, so the savings can really add up! To participate, simply have your friend mention your name when they register. We believe fitness is better with friends, and we\'re excited to welcome new faces to our community. Terms and conditions apply.',
+    category: 'promotion'
   }
 ];
