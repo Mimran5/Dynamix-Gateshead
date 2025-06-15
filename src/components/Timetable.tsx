@@ -27,11 +27,14 @@ const Timetable: React.FC = () => {
 
   useEffect(() => {
     const fetchAvailability = async () => {
+      console.log('Fetching availability for classes:', classes);
       const availability: Record<string, { available: number; waitlisted: number }> = {};
       for (const classItem of classes) {
         const result = await getClassAvailability(classItem.id);
+        console.log(`Availability for ${classItem.name}:`, result);
         availability[classItem.id] = result;
       }
+      console.log('Final availability state:', availability);
       setClassAvailability(availability);
     };
 
@@ -141,7 +144,24 @@ const Timetable: React.FC = () => {
 
   const getClassTypeColor = (type: string) => {
     const classType = classTypes.find(t => t.id === type);
-    return classType?.color || 'bg-gray-100';
+    switch (type) {
+      case 'dance':
+        return 'bg-teal-50';
+      case 'yoga':
+        return 'bg-purple-50';
+      case 'pilates':
+        return 'bg-orange-50';
+      case 'gymnastics':
+        return 'bg-blue-50';
+      case 'kickboxing':
+        return 'bg-red-50';
+      case 'aerobics':
+        return 'bg-pink-50';
+      case 'karate':
+        return 'bg-green-50';
+      default:
+        return 'bg-gray-50';
+    }
   };
 
   const getClassStatusColor = (classId: string) => {
@@ -235,21 +255,15 @@ const Timetable: React.FC = () => {
                         return <div key={time} className="h-16 bg-white"></div>;
                       }
 
-                      const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
-                                         (classAvailability[classItem.id]?.waitlisted || 0);
-                      if (totalBookings < 5 && classAvailability[classItem.id]?.available === 0) {
-                        return <div key={time} className="h-16 bg-white"></div>;
-                      }
-
                       return (
                         <div
                           key={classItem.id}
-                          className={`h-16 p-2 bg-white hover:bg-gray-50 transition-colors ${getClassTypeColor(classItem.type)}`}
+                          className={`h-16 p-2 hover:bg-gray-50 transition-colors ${getClassTypeColor(classItem.type)}`}
                         >
                           <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start">
                               <h4 className="font-medium text-gray-900 text-xs">{classItem.name}</h4>
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/80 text-gray-700">
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white text-gray-700">
                                 {classItem.level}
                               </span>
                             </div>
