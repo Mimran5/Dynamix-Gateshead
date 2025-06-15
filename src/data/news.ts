@@ -15,10 +15,10 @@ export interface NewsItem {
 export const newsItems: NewsItem[] = [
   {
     id: '1',
-    title: 'Summer Gymnastics Camp 2024',
+    title: 'Summer Gymnastics Camp 2025',
     date: '2024-03-15',
     excerpt: 'Join our exciting summer gymnastics camp for beginners and intermediate levels. Limited spots available!',
-    content: 'We\'re thrilled to announce our first-ever Summer Gymnastics Camp! This intensive program will run for one week during the summer break, offering young athletes the opportunity to develop their skills in a fun and supportive environment. The camp will include daily training sessions, skill development workshops, and a showcase performance at the end. Perfect for ages 7-14, with separate groups for beginners and intermediate levels. Early registration is now open with a special discount for the first 20 participants!',
+    content: 'We\'re thrilled to announce our first-ever Summer Gymnastics Camp! This intensive program will run for one week during the summer break in 2025, offering young athletes the opportunity to develop their skills in a fun and supportive environment. The camp will include daily training sessions, skill development workshops, and a showcase performance at the end. Perfect for ages 7-14, with separate groups for beginners and intermediate levels. Early registration is now open with a special discount for the first 20 participants!',
     image: '/images/classes/optimized/gymnastics.png',
     category: 'event',
     action: {
@@ -28,10 +28,10 @@ export const newsItems: NewsItem[] = [
   },
   {
     id: '2',
-    title: 'Membership Survey - Win Prizes!',
+    title: 'Membership Survey - Win Amazing Prizes!',
     date: '2024-03-10',
-    excerpt: 'Complete our survey for a chance to win one of three amazing prizes. Help shape the future of Dynamix!',
-    content: 'We want to hear from you! Take our quick survey to help us understand your fitness goals and preferences. Your feedback will help us improve our services and create better membership options. As a thank you, we\'re giving away three fantastic prizes: 1st Prize - 3 months free membership, 2nd Prize - 1 month free membership, 3rd Prize - £50 class credit. The survey takes just 5 minutes to complete. Winners will be announced on April 1st, 2024.',
+    excerpt: 'Complete our survey for a chance to win £100 or a Free Family Membership. Share your opinion and win big!',
+    content: '🎉 Win £100 or a Free Family Membership! 🎉\n\nShare your opinion in our quick 3-minute survey and get the chance to win:\n🥇 £100 (1st prize)\n🥈 1 Month Free Family Membership (2nd & 3rd prize — worth £95)\n\nPLUS: Refer friends and get 1 bonus entry for every person who completes it and mentions your name!\n\nRaffle closes on 30th June 2025 – don\'t miss your chance to win!',
     category: 'promotion',
     action: {
       text: 'Take Survey',
