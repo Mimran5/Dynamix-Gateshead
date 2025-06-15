@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { classes, days, classTypes, Class, timeSlots } from '../data/classes';
-import { Clock, Users, AlertCircle, Info } from 'lucide-react';
+import { Clock, Users, AlertCircle, Info, X } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ const Timetable: React.FC = () => {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState<string | null>(null);
+  const [hoveredClass, setHoveredClass] = useState<string | null>(null);
   const { bookClass, cancelBooking, joinWaitlist, getClassAvailability } = useBooking();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -146,35 +147,48 @@ const Timetable: React.FC = () => {
     const classType = classTypes.find(t => t.id === type);
     switch (type) {
       case 'dance':
-        return 'bg-teal-100 border-teal-500';
+        return 'bg-teal-50 border-teal-500 hover:bg-teal-100';
       case 'yoga':
-        return 'bg-purple-100 border-purple-500';
+        return 'bg-purple-50 border-purple-500 hover:bg-purple-100';
       case 'pilates':
-        return 'bg-orange-100 border-orange-500';
+        return 'bg-orange-50 border-orange-500 hover:bg-orange-100';
       case 'gymnastics':
-        return 'bg-blue-100 border-blue-500';
+        return 'bg-blue-50 border-blue-500 hover:bg-blue-100';
       case 'kickboxing':
-        return 'bg-red-100 border-red-500';
+        return 'bg-red-50 border-red-500 hover:bg-red-100';
       case 'aerobics':
-        return 'bg-pink-100 border-pink-500';
+        return 'bg-pink-50 border-pink-500 hover:bg-pink-100';
       case 'karate':
-        return 'bg-green-100 border-green-500';
+        return 'bg-green-50 border-green-500 hover:bg-green-100';
       default:
-        return 'bg-gray-100 border-gray-500';
+        return 'bg-gray-50 border-gray-500 hover:bg-gray-100';
     }
   };
 
-  const getClassStatusColor = (classId: string) => {
-    const totalBookings = (classAvailability[classId]?.available || 0) + 
-                         (classAvailability[classId]?.waitlisted || 0);
-    
-    if (totalBookings >= 5) {
-      return 'border-green-500 bg-green-50';
-    } else if (classAvailability[classId]?.available === 0) {
-      return 'border-orange-500 bg-orange-50';
+  const getAvailabilityText = (classId: string) => {
+    const available = classAvailability[classId]?.available || 0;
+    const waitlisted = classAvailability[classId]?.waitlisted || 0;
+
+    if (available === 0 && waitlisted === 0) {
+      return { text: 'Fully Booked', color: 'text-red-600' };
+    } else if (available === 0) {
+      return { text: `${waitlisted} on Waitlist`, color: 'text-orange-600' };
     } else {
-      return 'border-blue-500 bg-blue-50';
+      return { text: `${available} Spots Left`, color: 'text-green-600' };
     }
+  };
+
+  const getClassTooltip = (classItem: Class) => {
+    const availability = getAvailabilityText(classItem.id);
+    return (
+      <div className="p-2 text-sm">
+        <h4 className="font-medium text-gray-900">{classItem.name}</h4>
+        <p className="text-gray-600">{classItem.instructor}</p>
+        <p className="text-gray-600">Level: {classItem.level}</p>
+        <p className="text-gray-600">Time: {classItem.time}</p>
+        <p className={availability.color}>{availability.text}</p>
+      </div>
+    );
   };
 
   const getClassByTimeAndDay = (time: string, day: string) => {
@@ -182,21 +196,21 @@ const Timetable: React.FC = () => {
   };
 
   return (
-    <section id="timetable" className="py-8 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Class Schedule</h2>
+    <section id="timetable" className="py-4 bg-white">
+      <div className="container mx-auto px-2">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Class Schedule</h2>
           <p className="text-sm text-gray-600">
             View and book your preferred classes. All classes are color-coded by type.
           </p>
         </div>
 
         {/* Fixed Class Type Filter */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 py-2 mb-4">
-          <div className="flex flex-wrap justify-center gap-2">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 py-2 mb-2">
+          <div className="flex flex-wrap justify-center gap-1.5">
             <button
               onClick={() => setSelectedType(null)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`px-2.5 py-1 rounded-md text-sm font-medium transition-all duration-200 ${
                 !selectedType
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -208,7 +222,7 @@ const Timetable: React.FC = () => {
               <button
                 key={type.id}
                 onClick={() => setSelectedType(type.id)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`px-2.5 py-1 rounded-md text-sm font-medium transition-all duration-200 ${
                   selectedType === type.id
                     ? 'bg-gray-900 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -221,21 +235,21 @@ const Timetable: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center text-sm">
-            <AlertCircle className="mr-2" size={16} />
+          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center text-sm">
+            <AlertCircle className="mr-2" size={14} />
             {error}
           </div>
         )}
 
         <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <div className="min-w-[1000px] bg-white">
+          <div className="min-w-[900px] bg-white">
             <div className="grid grid-cols-7 gap-px bg-gray-200">
               {/* Time column */}
               <div className="col-span-1 bg-white">
-                <div className="h-10"></div>
+                <div className="h-8"></div>
                 <div className="space-y-px">
                   {timeSlots.map(time => (
-                    <div key={time} className="h-14 flex items-center justify-end pr-2 text-xs text-gray-500 bg-white">
+                    <div key={time} className="h-12 flex items-center justify-end pr-1.5 text-xs text-gray-500 bg-white">
                       {time}
                     </div>
                   ))}
@@ -245,32 +259,35 @@ const Timetable: React.FC = () => {
               {/* Day columns */}
               {days.map((day) => (
                 <div key={day} className="col-span-1">
-                  <h3 className="h-10 flex items-center justify-center text-sm font-semibold text-gray-900 bg-white border-b border-gray-200">
+                  <h3 className="h-8 flex items-center justify-center text-xs font-semibold text-gray-900 bg-white border-b border-gray-200">
                     {day}
                   </h3>
                   <div className="space-y-px">
                     {timeSlots.map(time => {
                       const classItem = classes.find(c => c.time === time && c.day === day);
                       if (!classItem) {
-                        return <div key={time} className="h-14 bg-white"></div>;
+                        return <div key={time} className="h-12 bg-white"></div>;
                       }
 
                       const isFiltered = selectedType && classItem.type !== selectedType;
+                      const availability = getAvailabilityText(classItem.id);
                       
                       return (
                         <div
                           key={classItem.id}
-                          className={`h-14 p-1.5 transition-all duration-200 ${
+                          className={`h-12 p-1 transition-all duration-200 relative ${
                             getClassTypeColor(classItem.type)
                           } ${isFiltered ? 'opacity-30' : 'opacity-100'}`}
+                          onMouseEnter={() => setHoveredClass(classItem.id)}
+                          onMouseLeave={() => setHoveredClass(null)}
                         >
                           <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start">
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-gray-900 text-xs truncate" title={classItem.name}>
+                                <h4 className="font-medium text-gray-900 text-xs truncate">
                                   {classItem.name}
                                 </h4>
-                                <div className="text-[10px] text-gray-600 truncate" title={classItem.instructor}>
+                                <div className="text-[10px] text-gray-600 truncate">
                                   {classItem.instructor}
                                 </div>
                               </div>
@@ -279,14 +296,9 @@ const Timetable: React.FC = () => {
                               </span>
                             </div>
                             <div className="mt-auto flex items-center justify-between">
-                              <div className="text-[10px] text-gray-600 flex items-center">
+                              <div className={`text-[10px] ${availability.color} flex items-center`}>
                                 <Users size={10} className="mr-1" />
-                                <span>{classAvailability[classItem.id]?.available || 0}</span>
-                                {classAvailability[classItem.id]?.waitlisted > 0 && (
-                                  <span className="ml-1 text-orange-600">
-                                    ({classAvailability[classItem.id]?.waitlisted})
-                                  </span>
-                                )}
+                                {availability.text}
                               </div>
                               {user ? (
                                 <button
@@ -316,6 +328,13 @@ const Timetable: React.FC = () => {
                               )}
                             </div>
                           </div>
+
+                          {/* Tooltip */}
+                          {hoveredClass === classItem.id && (
+                            <div className="absolute z-20 left-full ml-2 top-0 bg-white rounded-lg shadow-lg border border-gray-200">
+                              {getClassTooltip(classItem)}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -327,13 +346,13 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-4 flex flex-wrap justify-center gap-4">
+        <div className="mt-3 flex flex-wrap justify-center gap-3">
           <div>
-            <h4 className="text-xs font-medium text-gray-900 mb-2 text-center">Class Types</h4>
-            <div className="flex flex-wrap justify-center gap-3">
+            <h4 className="text-xs font-medium text-gray-900 mb-1.5 text-center">Class Types</h4>
+            <div className="flex flex-wrap justify-center gap-2">
               {classTypes.map(type => (
                 <div key={type.id} className="flex items-center">
-                  <div className={`w-2 h-2 rounded-full ${getClassTypeColor(type.id)} mr-1.5`}></div>
+                  <div className={`w-2 h-2 rounded-full ${getClassTypeColor(type.id)} mr-1`}></div>
                   <span className="text-xs text-gray-700">{type.name}</span>
                 </div>
               ))}
