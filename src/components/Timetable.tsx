@@ -162,23 +162,24 @@ const Timetable: React.FC = () => {
   };
 
   return (
-    <section id="timetable" className="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section id="timetable" className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">Class Timetable</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Book your classes online and manage your schedule with ease.
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Class Schedule</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            View and book your preferred classes. All classes are color-coded by type for easy identification.
           </p>
         </div>
 
-        <div className="mb-12">
-          <div className="flex flex-wrap justify-center gap-4">
+        {/* Class Type Filter */}
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setSelectedType(null)}
-              className={`px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 !selectedType
-                  ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               All Classes
@@ -187,10 +188,10 @@ const Timetable: React.FC = () => {
               <button
                 key={type.id}
                 onClick={() => setSelectedType(type.id)}
-                className={`px-6 py-3 rounded-full transition-all duration-200 transform hover:scale-105 ${
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   selectedType === type.id
-                    ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {type.name}
@@ -200,21 +201,21 @@ const Timetable: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center animate-fade-in">
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 flex items-center">
             <AlertCircle className="mr-2" size={20} />
             {error}
           </div>
         )}
 
-        <div className="overflow-x-auto rounded-2xl shadow-xl">
-          <div className="min-w-[1200px] bg-white p-3">
-            <div className="grid grid-cols-7 gap-3">
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <div className="min-w-[1200px] bg-white">
+            <div className="grid grid-cols-7 gap-px bg-gray-200">
               {/* Time column */}
-              <div className="col-span-1">
-                <div className="h-12"></div> {/* Reduced spacer for day headers */}
-                <div className="space-y-1">
+              <div className="col-span-1 bg-white">
+                <div className="h-12"></div>
+                <div className="space-y-px">
                   {timeSlots.map(time => (
-                    <div key={time} className="h-16 flex items-center justify-end pr-3 text-sm text-gray-500">
+                    <div key={time} className="h-16 flex items-center justify-end pr-4 text-sm text-gray-500 bg-white">
                       {time}
                     </div>
                   ))}
@@ -224,31 +225,31 @@ const Timetable: React.FC = () => {
               {/* Day columns */}
               {days.map((day) => (
                 <div key={day} className="col-span-1">
-                  <h3 className="h-12 flex items-center justify-center text-lg font-semibold text-gray-800 border-b">
+                  <h3 className="h-12 flex items-center justify-center text-sm font-semibold text-gray-900 bg-white border-b border-gray-200">
                     {day}
                   </h3>
-                  <div className="space-y-1">
+                  <div className="space-y-px">
                     {timeSlots.map(time => {
                       const classItem = getClassByTimeAndDay(time, day);
                       if (!classItem) {
-                        return <div key={time} className="h-16 border border-gray-100 rounded-lg"></div>;
+                        return <div key={time} className="h-16 bg-white"></div>;
                       }
 
                       const totalBookings = (classAvailability[classItem.id]?.available || 0) + 
                                          (classAvailability[classItem.id]?.waitlisted || 0);
                       if (totalBookings < 5 && classAvailability[classItem.id]?.available === 0) {
-                        return <div key={time} className="h-16 border border-gray-100 rounded-lg"></div>;
+                        return <div key={time} className="h-16 bg-white"></div>;
                       }
 
                       return (
                         <div
                           key={classItem.id}
-                          className={`h-16 border-2 rounded-lg p-1.5 hover:shadow-md transition-all duration-200 ${getClassTypeColor(classItem.type)} ${getClassStatusColor(classItem.id)}`}
+                          className={`h-16 p-2 bg-white hover:bg-gray-50 transition-colors ${getClassTypeColor(classItem.type)}`}
                         >
                           <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start">
                               <h4 className="font-medium text-gray-900 text-xs">{classItem.name}</h4>
-                              <span className="text-[10px] font-medium px-1 py-0.5 rounded-full bg-white/50 text-gray-700">
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-white/80 text-gray-700">
                                 {classItem.level}
                               </span>
                             </div>
@@ -268,10 +269,10 @@ const Timetable: React.FC = () => {
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-1.5 py-0.5 text-[10px] font-medium rounded-full transition-all duration-200 ${
+                                  className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${
                                     classAvailability[classItem.id]?.available > 0
-                                      ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md'
-                                      : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-md'
+                                      ? 'bg-gray-900 text-white hover:bg-gray-800'
+                                      : 'bg-orange-500 text-white hover:bg-orange-600'
                                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                   {loading[classItem.id] ? (
@@ -285,7 +286,7 @@ const Timetable: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={() => navigate('/member')}
-                                  className="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-gradient-to-r from-teal-600 to-blue-600 text-white hover:shadow-md"
+                                  className="px-2 py-0.5 text-[10px] font-medium rounded bg-gray-900 text-white hover:bg-gray-800"
                                 >
                                   Login
                                 </button>
@@ -303,36 +304,16 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-          <div className="flex flex-wrap justify-center gap-8">
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-4 text-center">Class Status</h4>
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-50 border-2 border-green-500 mr-2"></div>
-                  <span className="text-xs text-gray-700">Confirmed (5+)</span>
+        <div className="mt-8 flex flex-wrap justify-center gap-8">
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-3 text-center">Class Types</h4>
+            <div className="flex flex-wrap justify-center gap-4">
+              {classTypes.map(type => (
+                <div key={type.id} className="flex items-center">
+                  <div className={`w-3 h-3 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
+                  <span className="text-xs text-gray-700">{type.name}</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-blue-50 border-2 border-blue-500 mr-2"></div>
-                  <span className="text-xs text-gray-700">Available</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-orange-50 border-2 border-orange-500 mr-2"></div>
-                  <span className="text-xs text-gray-700">Full (Waitlist)</span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-4 text-center">Class Types</h4>
-              <div className="flex flex-wrap justify-center gap-4">
-                {classTypes.map(type => (
-                  <div key={type.id} className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full ${getClassTypeColor(type.id)} mr-2`}></div>
-                    <span className="text-xs text-gray-700">{type.name}</span>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>
