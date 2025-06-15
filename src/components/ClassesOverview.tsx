@@ -32,7 +32,7 @@ const ClassesOverview: React.FC = () => {
                 <p className="text-white text-sm mb-4 drop-shadow-lg">{getDescriptionForType(type.id)}</p>
                 <Link
                   to="/classes"
-                  className="inline-flex items-center text-white hover:text-primary-400 transition-colors drop-shadow-lg"
+                  className="inline-flex items-center bg-white text-gray-900 px-4 py-2 rounded-full font-medium hover:bg-primary-400 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   View Schedule
                   <svg
@@ -74,6 +74,8 @@ function getDescriptionForType(type: string): string {
       return 'Get your heart pumping with our fun and energetic aerobics classes.';
     case 'karate':
       return 'Learn discipline and self-defense through traditional karate training.';
+    case 'zumba':
+      return 'Dance your way to fitness with our energetic Zumba classes combining Latin and international music.';
     default:
       return '';
   }

@@ -12,6 +12,7 @@ export const classTypes: ClassType[] = [
   { id: 'kickboxing', name: 'Kickboxing', color: '#DC2626' },
   { id: 'aerobics', name: 'Aerobics', color: '#DB2777' },
   { id: 'karate', name: 'Karate', color: '#059669' },
+  { id: 'zumba', name: 'Zumba', color: '#EAB308' }
 ];
 
 export interface Class {
