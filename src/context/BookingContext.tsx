@@ -29,7 +29,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newBooking: ClassBooking = {
         classId,
         currentBookings: 0,
-        waitlist: []
+        waitlist: [],
+        attendance: []
       };
       await setDoc(bookingRef, newBooking);
       return newBooking;
@@ -261,64 +262,45 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const getClassAvailability = async (classId: string): Promise<{ available: number; waitlisted: number }> => {
     try {
-      const classData = classes.find(c => c.id === classId);
-      if (!classData) {
-        return { available: 0, waitlisted: 0 };
+      const classDoc = await getDoc(doc(db, 'classBookings', classId));
+      if (classDoc.exists()) {
+        const data = classDoc.data() as ClassBooking;
+        return {
+          available: data.currentBookings || 0,
+          waitlisted: data.waitlist?.length || 0
+        };
       }
-
-      const bookingRef = doc(db, 'classBookings', classId);
-      const bookingSnap = await getDoc(bookingRef);
-      
-      if (!bookingSnap.exists()) {
-        return { available: classData.capacity, waitlisted: 0 };
-      }
-
-      const bookingData = bookingSnap.data();
-      const available = Math.max(0, classData.capacity - bookingData.currentBookings);
-      const waitlisted = bookingData.waitlist.filter(
-        (entry: WaitlistEntry) => entry.status === 'waiting'
-      ).length;
-
-      return { available, waitlisted };
     } catch (error) {
-      console.error('Error getting class availability:', error);
-      return { available: 0, waitlisted: 0 };
+      console.error('Error fetching class availability:', error);
     }
+    return { available: 0, waitlisted: 0 };
   };
 
   const getClassAttendees = async (classId: string): Promise<Booking[]> => {
     try {
       const bookingsRef = collection(db, 'bookings');
-      const q = query(
-        bookingsRef,
-        where('classId', '==', classId),
-        where('status', '==', 'confirmed')
-      );
-
+      const q = query(bookingsRef, where('classId', '==', classId));
       const querySnapshot = await getDocs(q);
-      const bookings = querySnapshot.docs.map(doc => doc.data() as Booking);
-
-      // Get user details for each booking
-      const bookingsWithUserDetails = await Promise.all(
-        bookings.map(async (booking) => {
-          const userRef = doc(db, 'users', booking.userId);
-          const userSnap = await getDoc(userRef);
-          const userData = userSnap.exists() ? userSnap.data() : null;
-
-          return {
-            ...booking,
-            userDetails: userData ? {
-              name: userData.name,
-              email: userData.email,
-              contact: userData.contact
-            } : null
-          };
-        })
-      );
-
-      return bookingsWithUserDetails;
+      const attendees: Booking[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        attendees.push({
+          id: doc.id,
+          classId: data.classId,
+          userId: data.userId,
+          status: data.status,
+          bookedAt: data.bookedAt.toDate(),
+          attended: data.attended || false,
+          attendanceMarkedBy: data.attendanceMarkedBy,
+          attendanceMarkedAt: data.attendanceMarkedAt?.toDate(),
+          attendanceNotes: data.attendanceNotes,
+          guestInfo: data.guestInfo,
+          userDetails: data.userDetails || undefined
+        });
+      });
+      return attendees;
     } catch (error) {
-      console.error('Error getting class attendees:', error);
+      console.error('Error fetching class attendees:', error);
       return [];
     }
   };
