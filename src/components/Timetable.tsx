@@ -197,7 +197,7 @@ const Timetable: React.FC = () => {
 
   return (
     <section id="timetable" className="py-4 bg-white">
-      <div className="container mx-auto px-2">
+      <div className="container mx-auto px-0">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Class Schedule</h2>
           <p className="text-sm text-gray-600">
@@ -243,13 +243,13 @@ const Timetable: React.FC = () => {
 
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <div className="min-w-[900px] bg-white">
-            <div className="grid grid-cols-7 gap-px bg-gray-200">
+            <div className="grid grid-cols-7 gap-0">
               {/* Time column */}
               <div className="col-span-1 bg-white">
                 <div className="h-8"></div>
-                <div className="space-y-px">
+                <div className="space-y-0">
                   {timeSlots.map(time => (
-                    <div key={time} className="h-12 flex items-center justify-end pr-1.5 text-xs text-gray-500 bg-white">
+                    <div key={time} className="h-12 flex items-center justify-end pr-2 text-xs text-gray-500 bg-white">
                       {time}
                     </div>
                   ))}
@@ -262,7 +262,7 @@ const Timetable: React.FC = () => {
                   <h3 className="h-8 flex items-center justify-center text-xs font-semibold text-gray-900 bg-white border-b border-gray-200">
                     {day}
                   </h3>
-                  <div className="space-y-px">
+                  <div className="space-y-0">
                     {timeSlots.map(time => {
                       const classItem = classes.find(c => c.time === time && c.day === day);
                       if (!classItem) {
@@ -283,28 +283,28 @@ const Timetable: React.FC = () => {
                         >
                           <div className="flex flex-col h-full">
                             <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-gray-900 text-xs truncate">
+                              <div className="flex-1 min-w-0 pr-1">
+                                <h4 className="font-medium text-gray-900 text-xs truncate" title={classItem.name}>
                                   {classItem.name}
                                 </h4>
-                                <div className="text-[10px] text-gray-600 truncate">
+                                <div className="text-[10px] text-gray-600 truncate" title={classItem.instructor}>
                                   {classItem.instructor}
                                 </div>
                               </div>
-                              <span className="text-[10px] font-medium px-1 py-0.5 rounded-full bg-white text-gray-700 ml-1">
+                              <span className="text-[10px] font-medium px-1 py-0.5 rounded-full bg-white text-gray-700 flex-shrink-0">
                                 {classItem.level}
                               </span>
                             </div>
                             <div className="mt-auto flex items-center justify-between">
-                              <div className={`text-[10px] ${availability.color} flex items-center`}>
-                                <Users size={10} className="mr-1" />
-                                {availability.text}
+                              <div className={`text-[10px] ${availability.color} flex items-center truncate`}>
+                                <Users size={10} className="mr-1 flex-shrink-0" />
+                                <span className="truncate">{availability.text}</span>
                               </div>
                               {user ? (
                                 <button
                                   onClick={() => handleBooking(classItem.id)}
                                   disabled={loading[classItem.id] || !canBookOrCancel(classItem.id)}
-                                  className={`px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors ${
+                                  className={`px-1.5 py-0.5 text-[10px] font-medium rounded transition-colors flex-shrink-0 ${
                                     classAvailability[classItem.id]?.available > 0
                                       ? 'bg-gray-900 text-white hover:bg-gray-800'
                                       : 'bg-orange-500 text-white hover:bg-orange-600'
@@ -321,7 +321,7 @@ const Timetable: React.FC = () => {
                               ) : (
                                 <button
                                   onClick={() => navigate('/member')}
-                                  className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-900 text-white hover:bg-gray-800"
+                                  className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-900 text-white hover:bg-gray-800 flex-shrink-0"
                                 >
                                   Login
                                 </button>
