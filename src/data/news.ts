@@ -18,7 +18,7 @@ export const newsItems: NewsItem[] = [
     title: 'Summer Gymnastics Camp 2024',
     date: '2024-03-15',
     excerpt: 'Join our exciting summer gymnastics camp for beginners and intermediate levels. Limited spots available!',
-    content: 'We\'re thrilled to announce our first-ever Summer Gymnastics Camp! This intensive program will run for two weeks during the summer break, offering young athletes the opportunity to develop their skills in a fun and supportive environment. The camp will include daily training sessions, skill development workshops, and a showcase performance at the end. Perfect for ages 7-14, with separate groups for beginners and intermediate levels. Early registration is now open with a special discount for the first 20 participants!',
+    content: 'We\'re thrilled to announce our first-ever Summer Gymnastics Camp! This intensive program will run for one week during the summer break, offering young athletes the opportunity to develop their skills in a fun and supportive environment. The camp will include daily training sessions, skill development workshops, and a showcase performance at the end. Perfect for ages 7-14, with separate groups for beginners and intermediate levels. Early registration is now open with a special discount for the first 20 participants!',
     image: '/images/classes/optimized/gymnastics.png',
     category: 'event',
     action: {
@@ -35,7 +35,7 @@ export const newsItems: NewsItem[] = [
     category: 'promotion',
     action: {
       text: 'Take Survey',
-      link: 'https://dynamix/bio.form'
+      link: 'https://dynamix.bio/form'
     }
   },
   {
