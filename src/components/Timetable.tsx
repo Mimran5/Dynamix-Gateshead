@@ -67,6 +67,26 @@ const Timetable: React.FC = () => {
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+  // Color coding for class types
+  const getClassTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'gymnastics':
+        return 'bg-purple-100 border-purple-300 text-purple-800';
+      case 'kickboxing':
+        return 'bg-red-100 border-red-300 text-red-800';
+      case 'yoga':
+        return 'bg-green-100 border-green-300 text-green-800';
+      case 'pilates':
+        return 'bg-blue-100 border-blue-300 text-blue-800';
+      case 'aerobics':
+        return 'bg-orange-100 border-orange-300 text-orange-800';
+      case 'karate':
+        return 'bg-yellow-100 border-yellow-300 text-yellow-800';
+      default:
+        return 'bg-gray-100 border-gray-300 text-gray-800';
+    }
+  };
+
   // Filter classes based on selected type
   const filteredClasses = classes.filter(classItem => 
     selectedType === 'all' || classItem.type === selectedType
@@ -147,8 +167,8 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      {/* Compact Timetable Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Time-by-Day Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {days.map(day => {
           const dayClasses = groupedClasses[day];
           if (!dayClasses || dayClasses.length === 0) return null;
@@ -173,23 +193,26 @@ const Timetable: React.FC = () => {
                       onMouseEnter={() => setHoveredClass(classItem.id)}
                       onMouseLeave={() => setHoveredClass(null)}
                     >
-                      {/* Main class info */}
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="font-semibold text-sm text-gray-800 truncate">
-                          {classItem.name}
-                        </h4>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          isBooked 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {classItem.type}
+                      {/* Time and Class Type */}
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="font-semibold text-sm text-gray-800">
+                          {classItem.time}
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getClassTypeColor(classItem.type)}`}>
+                          {classItem.type.charAt(0).toUpperCase() + classItem.type.slice(1)}
                         </span>
                       </div>
                       
+                      {/* Class Name */}
+                      <h4 className="font-bold text-sm text-gray-800 mb-1">
+                        {classItem.name.split(' ').map(word => 
+                          word.charAt(0).toUpperCase() + word.slice(1)
+                        ).join(' ')}
+                      </h4>
+                      
+                      {/* Instructor */}
                       <div className="text-xs text-gray-600 mb-2">
-                        <div>{classItem.time} ({classItem.duration}min)</div>
-                        <div className="font-medium">{classItem.instructor}</div>
+                        <span className="font-medium">{classItem.instructor}</span>
                       </div>
 
                       {/* Hover details popup */}
@@ -197,8 +220,8 @@ const Timetable: React.FC = () => {
                         <div className="absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-xs">
                           <div className="space-y-1 mb-3">
                             <div><span className="font-semibold">Level:</span> {classItem.level}</div>
+                            <div><span className="font-semibold">Duration:</span> {classItem.duration} min</div>
                             <div><span className="font-semibold">Available:</span> {classItem.spotsLeft}/{classItem.maxSpots} spots</div>
-                            <div><span className="font-semibold">Instructor:</span> {classItem.instructor}</div>
                           </div>
                           
                           {user && (

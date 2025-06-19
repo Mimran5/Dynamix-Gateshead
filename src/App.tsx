@@ -17,6 +17,10 @@ import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import { useAuth } from './context/AuthContext';
 import ResetPassword from './components/ResetPassword';
+import './App.css';
+
+// Temporarily import force update to fix Firebase data
+import './utils/forceUpdateClasses';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -45,51 +49,49 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <BookingProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Navbar />
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={
-                  <>
-                    <Hero />
-                    <ClassesOverview />
-                    <Timetable />
-                    <Instructors />
-                    <Membership />
-                    <NewsUpdates />
-                    <Newsletter />
-                  </>
-                } />
-                <Route path="/classes" element={<ClassesOverview />} />
-                <Route path="/timetable" element={<Timetable />} />
-                <Route path="/instructors" element={<Instructors />} />
-                <Route path="/membership" element={<Membership />} />
-                <Route path="/cart" element={<Cart onClose={() => {}} />} />
-                <Route path="/checkout" element={<Checkout />} />
+    <AuthProvider>
+      <BookingProvider>
+        <Router>
+          <div className="App">
+            <Navbar />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={
+                <>
+                  <Hero />
+                  <ClassesOverview />
+                  <Timetable />
+                  <Instructors />
+                  <Membership />
+                  <NewsUpdates />
+                  <Newsletter />
+                </>
+              } />
+              <Route path="/classes" element={<ClassesOverview />} />
+              <Route path="/timetable" element={<Timetable />} />
+              <Route path="/instructors" element={<Instructors />} />
+              <Route path="/membership" element={<Membership />} />
+              <Route path="/cart" element={<Cart onClose={() => {}} />} />
+              <Route path="/checkout" element={<Checkout />} />
 
-                {/* Auth Routes */}
-                <Route path="/member" element={<MemberAuth />} />
-                <Route path="/dashboard/*" element={
-                  <ProtectedRoute>
-                    <MemberDashboard />
-                  </ProtectedRoute>
-                } />
+              {/* Auth Routes */}
+              <Route path="/member" element={<MemberAuth />} />
+              <Route path="/dashboard/*" element={
+                <ProtectedRoute>
+                  <MemberDashboard />
+                </ProtectedRoute>
+              } />
 
-                {/* Reset Password Route */}
-                <Route path="/reset-password" element={<ResetPassword />} />
+              {/* Reset Password Route */}
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Catch all route */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-          </BookingProvider>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+              {/* Catch all route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </BookingProvider>
+    </AuthProvider>
   );
 };
 
