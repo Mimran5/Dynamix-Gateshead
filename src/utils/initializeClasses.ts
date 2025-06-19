@@ -36,7 +36,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Julie Murphy',
+    instructor: 'Olivia Appleby',
     level: 'Advanced'
   },
   {
@@ -48,7 +48,7 @@ const classes = [
     duration: 45, // 45 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Julie Murphy',
+    instructor: 'Olivia Appleby',
     level: 'Beginners'
   },
 
@@ -62,7 +62,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Teresa Carat',
+    instructor: 'Kainara Motta',
     level: 'Ladies Only'
   },
 
@@ -100,7 +100,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Teresa Carat',
+    instructor: 'Teresa Carter',
     level: 'Ladies Only'
   },
 
@@ -114,7 +114,7 @@ const classes = [
     duration: 45, // 45 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Julie Murphy',
+    instructor: 'Perla Ehrentreu',
     level: 'Year 7'
   },
   {
@@ -152,7 +152,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Teresa Carat',
+    instructor: 'Teresa Carter',
     level: 'Ladies Only'
   }
 ];
