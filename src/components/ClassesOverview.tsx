@@ -19,14 +19,16 @@ const ClassesOverview: React.FC = () => {
               key={type.id}
               className="relative overflow-hidden rounded-lg shadow-lg group"
             >
-              <img
-                src={`/images/classes/optimized/${type.id}.png`}
-                alt={type.name}
-                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-                onError={(e) => {
-                  e.currentTarget.src = '/images/classes/optimized/default.png';
-                }}
-              />
+              <div className="relative h-48 overflow-hidden rounded-t-lg">
+                <img
+                  src={`/images/classes/optimized/${type.id}.png`}
+                  alt={type.name}
+                  className="w-full h-full object-cover transform scale-110 transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    e.currentTarget.src = '/images/classes/optimized/default.png';
+                  }}
+                />
+              </div>
               <div className="absolute inset-0 p-6 flex flex-col justify-end">
                 <h3 className="text-xl font-bold text-white mb-2 drop-shadow-lg">{type.name}</h3>
                 <p className="text-white text-sm mb-4 drop-shadow-lg">{getDescriptionForType(type.id)}</p>

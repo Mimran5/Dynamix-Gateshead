@@ -2,13 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import memberships from '../data/memberships';
 import { classes as allClasses } from '../data/classes';
-import { db } from '../firebase';
+import { db, auth } from '../utils/firebase';
 import { doc, updateDoc, getDoc, collection, getDocs, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import AttendanceHistory from './AttendanceHistory';
 import AdminAttendance from './AdminAttendance';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth as firebaseAuth } from '../utils/firebase';
 import { useBooking } from '../context/BookingContext';
 import { createCustomer, createSubscription } from '../services/subscriptionService';
 import StripeProvider from './StripeProvider';
@@ -596,7 +596,7 @@ const MemberDashboard: React.FC = () => {
     try {
       // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
-        auth,
+        firebaseAuth,
         newUserForm.email,
         Math.random().toString(36).slice(-8) // Generate random password
       );

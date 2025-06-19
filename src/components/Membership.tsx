@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { createCustomer, createSubscription } from '../services/subscriptionService';
 import { User } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
+import { db } from '../utils/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const Membership: React.FC = () => {

@@ -3,7 +3,7 @@ import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
 
 const Timetable: React.FC = () => {
-  const { classes, userBookings, bookClass, cancelBooking } = useBooking();
+  const { classes, userBookings, bookClass, cancelBooking, loading: contextLoading, error: contextError } = useBooking();
   const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(false);
@@ -11,10 +11,16 @@ const Timetable: React.FC = () => {
 
   // Debug logging
   useEffect(() => {
-    console.log('Classes:', classes);
-    console.log('User Bookings:', userBookings);
-    console.log('Selected Type:', selectedType);
-  }, [classes, userBookings, selectedType]);
+    console.log('Timetable: Component state:', {
+      classes,
+      userBookings,
+      selectedType,
+      loading,
+      error,
+      contextLoading,
+      contextError
+    });
+  }, [classes, userBookings, selectedType, loading, error, contextLoading, contextError]);
 
   const handleBookClass = async (classId: string) => {
     if (!user) {
@@ -62,11 +68,6 @@ const Timetable: React.FC = () => {
     selectedType === 'all' || classItem.type === selectedType
   );
 
-  // Debug logging for filtered classes
-  useEffect(() => {
-    console.log('Filtered Classes:', filteredClasses);
-  }, [filteredClasses]);
-
   const timeSlots = [
     '17:00', '17:30', '17:45', '18:00', '18:15', '18:30', '18:45',
     '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30',
@@ -101,16 +102,32 @@ const Timetable: React.FC = () => {
     return acc;
   }, {} as Record<string, (typeof filteredClasses[0] & { slotIndex: number; span: number })[]>);
 
+  // Debug logging for filtered classes
+  useEffect(() => {
+    console.log('Filtered Classes:', filteredClasses);
+  }, [filteredClasses]);
+
   // Debug logging for grouped classes
   useEffect(() => {
     console.log('Grouped Classes:', groupedClasses);
   }, [groupedClasses]);
 
   // Add loading state display
-  if (loading) {
+  if (contextLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Add error state display
+  if (contextError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {contextError}
+        </div>
       </div>
     );
   }
