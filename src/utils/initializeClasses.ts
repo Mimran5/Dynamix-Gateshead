@@ -154,6 +154,18 @@ const classes = [
     spotsLeft: 12,
     instructor: 'Teresa Carter',
     level: 'Ladies Only'
+  },
+  {
+    id: 'zumba-sunday-715',
+    name: 'Zumba',
+    type: 'zumba',
+    day: 'Sunday',
+    time: '19:15',
+    duration: 45, // 45 minutes
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Aidy Connick',
+    level: 'All Levels'
   }
 ];
 

@@ -26,9 +26,42 @@ body {
   padding: 0 1rem;
 }
 
+/* Section spacing to prevent navbar overlap */
+section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Hero section needs extra top padding to account for fixed navbar */
+.hero-section {
+  padding-top: 6rem; /* Extra space for fixed navbar */
+}
+
+/* Timetable specific spacing */
+.timetable-section {
+  padding-top: 4rem; /* Extra space for fixed navbar */
+}
+
+/* All sections need top margin to prevent navbar overlap */
+section:not(.hero-section) {
+  margin-top: 4rem; /* Buffer zone underneath fixed navbar */
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .container {
     padding: 0 0.5rem;
+  }
+  
+  .hero-section {
+    padding-top: 5rem; /* Smaller buffer for mobile */
+  }
+  
+  .timetable-section {
+    padding-top: 3rem;
+  }
+  
+  section:not(.hero-section) {
+    margin-top: 3rem; /* Smaller buffer for mobile */
   }
 } 

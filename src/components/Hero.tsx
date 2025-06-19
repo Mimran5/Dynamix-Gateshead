@@ -11,7 +11,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative h-screen flex items-center">
+    <section className="hero-section relative h-screen flex items-center">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 

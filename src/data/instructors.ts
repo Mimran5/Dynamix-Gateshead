@@ -41,5 +41,11 @@ export const instructors: Instructor[] = [
     name: 'Julie Murphy',
     specialty: 'Karate',
     bio: 'Julie is a dedicated karate instructor with a passion for teaching traditional martial arts. She focuses on developing discipline, respect, and technical excellence in her students.'
+  },
+  {
+    id: 'aidy-connick',
+    name: 'Aidy Connick',
+    specialty: 'Zumba',
+    bio: 'Aidy is an energetic Zumba instructor who brings the rhythm and joy of Latin dance to fitness. Her classes combine fun choreography with effective cardio workouts.'
   }
 ];
