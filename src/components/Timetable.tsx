@@ -6,6 +6,7 @@ const Timetable: React.FC = () => {
   const { classes, userBookings, bookClass, cancelBooking, loading: contextLoading, error: contextError } = useBooking();
   const { user } = useAuth();
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedDay, setSelectedDay] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,12 +16,13 @@ const Timetable: React.FC = () => {
       classes,
       userBookings,
       selectedType,
+      selectedDay,
       loading,
       error,
       contextLoading,
       contextError
     });
-  }, [classes, userBookings, selectedType, loading, error, contextLoading, contextError]);
+  }, [classes, userBookings, selectedType, selectedDay, loading, error, contextLoading, contextError]);
 
   const handleBookClass = async (classId: string) => {
     if (!user) {
@@ -64,53 +66,30 @@ const Timetable: React.FC = () => {
     }
   };
 
-  const filteredClasses = classes.filter(classItem => 
-    selectedType === 'all' || classItem.type === selectedType
-  );
-
-  const timeSlots = [
-    '17:00', '17:30', '17:45', '18:00', '18:15', '18:30', '18:45',
-    '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30',
-    '20:45', '21:00', '21:15', '21:30', '21:45', '22:00'
-  ];
-
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  // Calculate how many time slots a class spans based on its duration
-  const getClassSpan = (duration: number) => {
-    // Assuming each time slot is 15 minutes
-    return Math.ceil(duration / 15);
-  };
+  // Filter classes based on selected type and day
+  const filteredClasses = classes.filter(classItem => {
+    const typeMatch = selectedType === 'all' || classItem.type === selectedType;
+    const dayMatch = selectedDay === 'all' || classItem.day === selectedDay;
+    return typeMatch && dayMatch;
+  }).sort((a, b) => {
+    // Sort by day first, then by time
+    const dayOrder = days.indexOf(a.day) - days.indexOf(b.day);
+    if (dayOrder !== 0) return dayOrder;
+    return a.time.localeCompare(b.time);
+  });
 
-  // Convert time (HH:mm) to slot index
-  const getTimeSlotIndex = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    const totalMinutes = hours * 60 + minutes;
-    const firstSlotMinutes = 17 * 60; // 17:00
-    return Math.floor((totalMinutes - firstSlotMinutes) / 15);
-  };
-
-  // Group classes by day and calculate their positions
+  // Group classes by day
   const groupedClasses = days.reduce((acc, day) => {
-    acc[day] = filteredClasses
-      .filter(classItem => classItem.day === day)
-      .map(classItem => ({
-        ...classItem,
-        slotIndex: getTimeSlotIndex(classItem.time),
-        span: getClassSpan(classItem.duration)
-      }));
+    acc[day] = filteredClasses.filter(classItem => classItem.day === day);
     return acc;
-  }, {} as Record<string, (typeof filteredClasses[0] & { slotIndex: number; span: number })[]>);
+  }, {} as Record<string, typeof filteredClasses>);
 
   // Debug logging for filtered classes
   useEffect(() => {
     console.log('Filtered Classes:', filteredClasses);
   }, [filteredClasses]);
-
-  // Debug logging for grouped classes
-  useEffect(() => {
-    console.log('Grouped Classes:', groupedClasses);
-  }, [groupedClasses]);
 
   // Add loading state display
   if (contextLoading) {
@@ -136,22 +115,62 @@ const Timetable: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Class Schedule</h2>
-        <div className="flex gap-4 mb-4 flex-wrap">
-          <button
-            className={`px-4 py-2 rounded ${selectedType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            onClick={() => setSelectedType('all')}
-          >
-            All Classes
-          </button>
-          {Array.from(new Set(classes.map(c => c.type))).map(type => (
+        
+        {/* Filter buttons */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Filter by Class Type:</h3>
+          <div className="flex gap-2 mb-4 flex-wrap">
             <button
-              key={type}
-              className={`px-4 py-2 rounded ${selectedType === type ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              onClick={() => setSelectedType(type)}
+              className={`px-4 py-2 rounded transition-colors ${
+                selectedType === 'all' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+              onClick={() => setSelectedType('all')}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              All Classes
             </button>
-          ))}
+            {Array.from(new Set(classes.map(c => c.type))).map(type => (
+              <button
+                key={type}
+                className={`px-4 py-2 rounded transition-colors ${
+                  selectedType === type 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+                onClick={() => setSelectedType(type)}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <h3 className="text-lg font-semibold mb-3">Filter by Day:</h3>
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <button
+              className={`px-4 py-2 rounded transition-colors ${
+                selectedDay === 'all' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+              onClick={() => setSelectedDay('all')}
+            >
+              All Days
+            </button>
+            {days.map(day => (
+              <button
+                key={day}
+                className={`px-4 py-2 rounded transition-colors ${
+                  selectedDay === day 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+                onClick={() => setSelectedDay(day)}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -161,68 +180,110 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          {/* Time slots header */}
-          <div className="grid grid-cols-[100px_repeat(20,minmax(100px,1fr))] gap-1 mb-2">
-            <div className="font-semibold">Time</div>
-            {timeSlots.map(time => (
-              <div key={time} className="text-sm text-center font-medium">
-                {time}
-              </div>
-            ))}
-          </div>
+      {/* Class Schedule Display */}
+      <div className="space-y-6">
+        {days.map(day => {
+          const dayClasses = groupedClasses[day];
+          if (!dayClasses || dayClasses.length === 0) return null;
 
-          {/* Days and classes */}
-          <div className="space-y-2">
-            {days.map(day => (
-              <div key={day} className="grid grid-cols-[100px_repeat(20,minmax(100px,1fr))] gap-1">
-                <div className="font-semibold">{day}</div>
-                <div className="col-span-20 relative h-20 bg-gray-50 rounded">
-                  {groupedClasses[day]?.map(classItem => {
-                    const isBooked = userBookings.some(booking => 
-                      booking.classId === classItem.id && booking.status === 'confirmed'
-                    );
-                    
-                    return (
-                      <div
-                        key={classItem.id}
-                        className="absolute top-0 bottom-0 rounded shadow-sm p-2 text-sm overflow-hidden"
-                        style={{
-                          left: `${(classItem.slotIndex / 20) * 100}%`,
-                          width: `${(classItem.span / 20) * 100}%`,
-                          backgroundColor: isBooked ? '#93c5fd' : '#dbeafe',
-                          borderLeft: '4px solid #2563eb'
-                        }}
-                      >
-                        <div className="font-medium mb-1">{classItem.name}</div>
-                        <div className="text-xs text-gray-600">
-                          {classItem.time} ({classItem.duration}min)
+          return (
+            <div key={day} className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
+                {day}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {dayClasses.map(classItem => {
+                  const isBooked = userBookings.some(booking => 
+                    booking.classId === classItem.id && booking.status === 'confirmed'
+                  );
+                  
+                  return (
+                    <div
+                      key={classItem.id}
+                      className={`border rounded-lg p-4 transition-all hover:shadow-md ${
+                        isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-800">{classItem.name}</h4>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isBooked 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {classItem.type}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <span className="font-medium">Time:</span>
+                          <span className="ml-2">{classItem.time} ({classItem.duration} min)</span>
                         </div>
-                        {user && (
+                        <div className="flex items-center">
+                          <span className="font-medium">Instructor:</span>
+                          <span className="ml-2">{classItem.instructor}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="font-medium">Level:</span>
+                          <span className="ml-2">{classItem.level}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="font-medium">Available Spots:</span>
+                          <span className={`ml-2 font-semibold ${
+                            classItem.spotsLeft === 0 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {classItem.spotsLeft} / {classItem.maxSpots}
+                          </span>
+                        </div>
+                      </div>
+
+                      {user && (
+                        <div className="mt-4">
                           <button
                             onClick={() => isBooked ? handleCancelBooking(classItem.id) : handleBookClass(classItem.id)}
                             disabled={loading || (!isBooked && classItem.spotsLeft === 0)}
-                            className={`mt-1 px-2 py-0.5 rounded text-xs ${
+                            className={`w-full py-2 px-4 rounded font-medium transition-colors ${
                               isBooked
                                 ? 'bg-red-500 hover:bg-red-600 text-white'
                                 : classItem.spotsLeft === 0
-                                ? 'bg-gray-300 cursor-not-allowed'
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-500'
                                 : 'bg-blue-500 hover:bg-blue-600 text-white'
                             }`}
                           >
-                            {isBooked ? 'Cancel' : classItem.spotsLeft === 0 ? 'Full' : 'Book'}
+                            {loading ? 'Processing...' : 
+                              isBooked ? 'Cancel Booking' : 
+                              classItem.spotsLeft === 0 ? 'Class Full' : 'Book Class'
+                            }
                           </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          );
+        })}
       </div>
+
+      {/* No classes message */}
+      {filteredClasses.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-500 text-lg">
+            No classes found for the selected filters.
+          </div>
+          <button
+            onClick={() => {
+              setSelectedType('all');
+              setSelectedDay('all');
+            }}
+            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Show All Classes
+          </button>
+        </div>
+      )}
     </div>
   );
 };
