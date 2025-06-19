@@ -19,9 +19,6 @@ import { useAuth } from './context/AuthContext';
 import ResetPassword from './components/ResetPassword';
 import './App.css';
 
-// Temporarily import force update to fix Firebase data
-import './utils/forceUpdateClasses';
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();

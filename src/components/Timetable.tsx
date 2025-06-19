@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
+import { forceUpdateClasses } from '../utils/forceUpdateClasses';
 
 const Timetable: React.FC = () => {
   const { classes, userBookings, bookClass, cancelBooking, loading: contextLoading, error: contextError } = useBooking();
@@ -9,6 +10,7 @@ const Timetable: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredClass, setHoveredClass] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<boolean>(false);
 
   // Debug logging
   useEffect(() => {
@@ -62,6 +64,20 @@ const Timetable: React.FC = () => {
       setError('Failed to cancel booking. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForceUpdate = async () => {
+    setUpdating(true);
+    setError(null);
+    
+    try {
+      await forceUpdateClasses();
+      setError('Classes updated successfully! Please refresh the page.');
+    } catch (err: any) {
+      setError('Failed to update classes: ' + err.message);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -131,7 +147,16 @@ const Timetable: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Class Schedule</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Class Schedule</h2>
+          <button
+            onClick={handleForceUpdate}
+            disabled={updating}
+            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm"
+          >
+            {updating ? 'Updating...' : 'Fix Teacher Names'}
+          </button>
+        </div>
         
         {/* Filter buttons */}
         <div className="flex gap-2 mb-4 flex-wrap">
@@ -162,7 +187,11 @@ const Timetable: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+        <div className={`px-4 py-3 rounded mb-4 text-sm ${
+          error.includes('successfully') 
+            ? 'bg-green-100 border border-green-400 text-green-700'
+            : 'bg-red-100 border border-red-400 text-red-700'
+        }`}>
           {error}
         </div>
       )}

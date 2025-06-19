@@ -186,7 +186,4 @@ export const forceUpdateClasses = async () => {
     console.error('Error force updating classes:', error);
     throw error;
   }
-};
-
-// Run the force update
-forceUpdateClasses(); 
+}; 
