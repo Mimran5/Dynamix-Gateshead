@@ -10,9 +10,9 @@ const classes = [
     day: 'Monday',
     time: '17:45',
     duration: 60, // 1 hour
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Sarah Johnson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Sarah',
     level: 'Year 3-4'
   },
   {
@@ -22,9 +22,9 @@ const classes = [
     day: 'Monday',
     time: '18:45',
     duration: 60, // 1 hour
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Sarah Johnson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Sarah',
     level: 'Year 5-6'
   },
   {
@@ -36,7 +36,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Mike Smith',
+    instructor: 'Coach Mike',
     level: 'Advanced'
   },
   {
@@ -48,7 +48,7 @@ const classes = [
     duration: 45, // 45 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Mike Smith',
+    instructor: 'Coach Mike',
     level: 'Beginners'
   },
 
@@ -60,9 +60,9 @@ const classes = [
     day: 'Tuesday',
     time: '19:15',
     duration: 60, // 1 hour
-    maxSpots: 20,
-    spotsLeft: 20,
-    instructor: 'Emma Wilson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Emma',
     level: 'Ladies Only'
   },
 
@@ -74,9 +74,9 @@ const classes = [
     day: 'Wednesday',
     time: '17:30',
     duration: 60, // 1 hour
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Sarah Johnson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Sarah',
     level: 'Year 1-3'
   },
   {
@@ -86,9 +86,9 @@ const classes = [
     day: 'Wednesday',
     time: '18:30',
     duration: 60, // 1 hour
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Sarah Johnson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Sarah',
     level: 'Advanced'
   },
   {
@@ -98,9 +98,9 @@ const classes = [
     day: 'Wednesday',
     time: '20:15',
     duration: 60, // 1 hour
-    maxSpots: 20,
-    spotsLeft: 20,
-    instructor: 'Emma Wilson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Emma',
     level: 'Ladies Only'
   },
 
@@ -112,9 +112,9 @@ const classes = [
     day: 'Thursday',
     time: '18:00',
     duration: 45, // 45 minutes
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Lisa Brown',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Lisa',
     level: 'Year 7'
   },
   {
@@ -126,7 +126,7 @@ const classes = [
     duration: 50, // 50 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'David Chen',
+    instructor: 'Coach David',
     level: 'Girls Only'
   },
   {
@@ -136,9 +136,9 @@ const classes = [
     day: 'Thursday',
     time: '19:45',
     duration: 60, // 1 hour
-    maxSpots: 15,
-    spotsLeft: 15,
-    instructor: 'Sarah Johnson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Sarah',
     level: 'High School'
   },
 
@@ -150,9 +150,9 @@ const classes = [
     day: 'Sunday',
     time: '20:00',
     duration: 60, // 1 hour
-    maxSpots: 20,
-    spotsLeft: 20,
-    instructor: 'Emma Wilson',
+    maxSpots: 12,
+    spotsLeft: 12,
+    instructor: 'Coach Emma',
     level: 'Ladies Only'
   }
 ];
