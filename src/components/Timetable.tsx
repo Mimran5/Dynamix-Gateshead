@@ -8,6 +8,7 @@ const Timetable: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredClass, setHoveredClass] = useState<string | null>(null);
 
   // Debug logging
   useEffect(() => {
@@ -108,58 +109,56 @@ const Timetable: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="mb-6">
         <h2 className="text-2xl font-bold mb-4">Class Schedule</h2>
         
         {/* Filter buttons */}
-        <div className="mb-6">
-          <div className="flex gap-2 mb-4 flex-wrap">
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <button
+            className={`px-3 py-1 rounded text-sm transition-colors ${
+              selectedType === 'all' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 hover:bg-gray-300'
+            }`}
+            onClick={() => setSelectedType('all')}
+          >
+            All Classes
+          </button>
+          {Array.from(new Set(classes.map(c => c.type))).map(type => (
             <button
-              className={`px-4 py-2 rounded transition-colors ${
-                selectedType === 'all' 
+              key={type}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                selectedType === type 
                   ? 'bg-blue-600 text-white' 
                   : 'bg-gray-200 hover:bg-gray-300'
               }`}
-              onClick={() => setSelectedType('all')}
+              onClick={() => setSelectedType(type)}
             >
-              All Classes
+              {type.charAt(0).toUpperCase() + type.slice(1)}
             </button>
-            {Array.from(new Set(classes.map(c => c.type))).map(type => (
-              <button
-                key={type}
-                className={`px-4 py-2 rounded transition-colors ${
-                  selectedType === type 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 hover:bg-gray-300'
-                }`}
-                onClick={() => setSelectedType(type)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
           {error}
         </div>
       )}
 
-      {/* Class Schedule Display */}
-      <div className="space-y-8">
+      {/* Compact Timetable Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {days.map(day => {
           const dayClasses = groupedClasses[day];
           if (!dayClasses || dayClasses.length === 0) return null;
 
           return (
-            <div key={day} className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
+            <div key={day} className="bg-white rounded-lg shadow-md p-4 border">
+              <h3 className="text-lg font-bold mb-3 text-gray-800 border-b pb-2">
                 {day}
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {dayClasses.map(classItem => {
                   const isBooked = userBookings.some(booking => 
                     booking.classId === classItem.id && booking.status === 'confirmed'
@@ -168,51 +167,45 @@ const Timetable: React.FC = () => {
                   return (
                     <div
                       key={classItem.id}
-                      className={`border rounded-lg p-4 ${
-                        isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                      className={`relative border rounded-lg p-3 cursor-pointer transition-all ${
+                        isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                       }`}
+                      onMouseEnter={() => setHoveredClass(classItem.id)}
+                      onMouseLeave={() => setHoveredClass(null)}
                     >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h4 className="font-bold text-lg text-gray-800">{classItem.name}</h4>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              isBooked 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {classItem.type}
-                            </span>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                            <div>
-                              <span className="font-semibold">Time:</span> {classItem.time} ({classItem.duration} min)
-                            </div>
-                            <div>
-                              <span className="font-semibold">Instructor:</span> {classItem.instructor}
-                            </div>
-                            <div>
-                              <span className="font-semibold">Level:</span> {classItem.level}
-                            </div>
-                          </div>
-                          
-                          <div className="mt-2">
-                            <span className="font-semibold">Available Spots:</span>
-                            <span className={`ml-2 font-bold ${
-                              classItem.spotsLeft === 0 ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                              {classItem.spotsLeft} / {classItem.maxSpots}
-                            </span>
-                          </div>
-                        </div>
+                      {/* Main class info */}
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-semibold text-sm text-gray-800 truncate">
+                          {classItem.name}
+                        </h4>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          isBooked 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {classItem.type}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-600 mb-2">
+                        <div>{classItem.time} ({classItem.duration}min)</div>
+                        <div className="font-medium">{classItem.instructor}</div>
+                      </div>
 
-                        {user && (
-                          <div className="md:w-32">
+                      {/* Hover details popup */}
+                      {hoveredClass === classItem.id && (
+                        <div className="absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-xs">
+                          <div className="space-y-1 mb-3">
+                            <div><span className="font-semibold">Level:</span> {classItem.level}</div>
+                            <div><span className="font-semibold">Available:</span> {classItem.spotsLeft}/{classItem.maxSpots} spots</div>
+                            <div><span className="font-semibold">Instructor:</span> {classItem.instructor}</div>
+                          </div>
+                          
+                          {user && (
                             <button
                               onClick={() => isBooked ? handleCancelBooking(classItem.id) : handleBookClass(classItem.id)}
                               disabled={loading || (!isBooked && classItem.spotsLeft === 0)}
-                              className={`w-full py-2 px-4 rounded font-medium transition-colors ${
+                              className={`w-full py-1 px-2 rounded text-xs font-medium transition-colors ${
                                 isBooked
                                   ? 'bg-red-500 hover:bg-red-600 text-white'
                                   : classItem.spotsLeft === 0
@@ -225,9 +218,9 @@ const Timetable: React.FC = () => {
                                 classItem.spotsLeft === 0 ? 'Full' : 'Book'
                               }
                             </button>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -239,7 +232,7 @@ const Timetable: React.FC = () => {
 
       {/* No classes message */}
       {filteredClasses.length === 0 && (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <div className="text-gray-500 text-lg">
             No classes found for the selected filter.
           </div>
