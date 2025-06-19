@@ -12,7 +12,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Sarah',
+    instructor: 'Sonni Stuart',
     level: 'Year 3-4'
   },
   {
@@ -24,7 +24,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Sarah',
+    instructor: 'Sonni Stuart',
     level: 'Year 5-6'
   },
   {
@@ -36,7 +36,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Mike',
+    instructor: 'Julie Murphy',
     level: 'Advanced'
   },
   {
@@ -48,7 +48,7 @@ const classes = [
     duration: 45, // 45 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Mike',
+    instructor: 'Julie Murphy',
     level: 'Beginners'
   },
 
@@ -62,7 +62,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Emma',
+    instructor: 'Teresa Carat',
     level: 'Ladies Only'
   },
 
@@ -76,7 +76,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Sarah',
+    instructor: 'Sonni Stuart',
     level: 'Year 1-3'
   },
   {
@@ -88,7 +88,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Sarah',
+    instructor: 'Sonni Stuart',
     level: 'Advanced'
   },
   {
@@ -100,7 +100,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Emma',
+    instructor: 'Teresa Carat',
     level: 'Ladies Only'
   },
 
@@ -114,7 +114,7 @@ const classes = [
     duration: 45, // 45 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Lisa',
+    instructor: 'Julie Murphy',
     level: 'Year 7'
   },
   {
@@ -126,7 +126,7 @@ const classes = [
     duration: 50, // 50 minutes
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach David',
+    instructor: 'Julie Murphy',
     level: 'Girls Only'
   },
   {
@@ -138,7 +138,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Sarah',
+    instructor: 'Sonni Stuart',
     level: 'High School'
   },
 
@@ -152,7 +152,7 @@ const classes = [
     duration: 60, // 1 hour
     maxSpots: 12,
     spotsLeft: 12,
-    instructor: 'Coach Emma',
+    instructor: 'Teresa Carat',
     level: 'Ladies Only'
   }
 ];
