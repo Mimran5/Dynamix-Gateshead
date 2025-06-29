@@ -73,7 +73,11 @@ const Timetable: React.FC = () => {
     
     try {
       await forceUpdateClasses();
-      setError('Classes updated successfully! Please refresh the page.');
+      setError('Classes updated successfully! The page will refresh automatically in 3 seconds...');
+      // Auto-refresh after 3 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
     } catch (err: any) {
       setError('Failed to update classes: ' + err.message);
     } finally {
@@ -156,7 +160,7 @@ const Timetable: React.FC = () => {
             disabled={updating}
             className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm"
           >
-            {updating ? 'Updating...' : 'Fix Teacher Names'}
+            {updating ? 'Updating...' : 'Update All Classes'}
           </button>
         </div>
         
