@@ -133,7 +133,7 @@ const Timetable: React.FC = () => {
       <div className="mb-4">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Weekly Class Schedule</h2>
-          <p className="text-gray-600 text-sm">Complete weekly timetable</p>
+          <p className="text-gray-600 text-sm">Hover over classes for details</p>
         </div>
       </div>
 
@@ -147,7 +147,7 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      {/* Compact Schedule Layout */}
+      {/* Ultra Compact Schedule Layout */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Schedule Header */}
         <div className="bg-gray-50 border-b border-gray-200">
@@ -193,44 +193,31 @@ const Timetable: React.FC = () => {
                   return (
                     <div key={day} className="relative">
                       <div
-                        className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm min-h-[40px] ${
+                        className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm min-h-[30px] flex items-center justify-center ${
                           isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                         }`}
                         onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
-                        {/* Class Type Badge */}
-                        <div className="mb-0.5">
-                          <span className={`px-1 py-0.5 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
-                            {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
-                          </span>
-                        </div>
-                        
-                        {/* Class Name - Very Compact */}
-                        <h4 className="font-bold text-xs text-gray-800 mb-0.5 leading-tight">
+                        {/* Only Class Name Visible */}
+                        <div className="text-xs font-medium text-gray-800 text-center leading-tight">
                           {classAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
-                        </h4>
-                        
-                        {/* Instructor - Very Compact */}
-                        <div className="text-xs text-gray-600 mb-0.5">
-                          {classAtTime.instructor}
-                        </div>
-
-                        {/* Quick Info - Very Compact */}
-                        <div className="text-xs text-gray-500">
-                          {isBooked ? (
-                            <span className="text-blue-600 font-medium">✓ Booked</span>
-                          ) : (
-                            <span>{classAtTime.spotsLeft} spots</span>
-                          )}
                         </div>
 
                         {/* Hover details popup */}
                         {hoveredClass === classAtTime.id && (
-                          <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs min-w-[220px]">
-                            <div className="space-y-1 mb-3">
+                          <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs min-w-[250px]">
+                            <div className="space-y-2 mb-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`px-2 py-1 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
+                                  {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
+                                </span>
+                                {isBooked && (
+                                  <span className="text-blue-600 font-medium text-xs">✓ Booked</span>
+                                )}
+                              </div>
                               <div><span className="font-semibold">Class:</span> {classAtTime.name}</div>
                               <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
                               <div><span className="font-semibold">Level:</span> {classAtTime.level}</div>
