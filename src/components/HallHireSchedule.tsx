@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, Users, Building } from 'lucide-react';
 import { hallHireBookingService } from '../data/hallHireBookings';
-import { hallHirePackages } from '../data/hallHire';
+import { hallHireRate } from '../data/hallHire';
 
 interface HallHireScheduleProps {
   selectedDate?: string;
@@ -15,11 +15,6 @@ const HallHireSchedule: React.FC<HallHireScheduleProps> = ({ selectedDate }) => 
   if (bookings.length === 0) {
     return null;
   }
-
-  const getPackageName = (packageId: string) => {
-    const pkg = hallHirePackages.find(p => p.id === packageId);
-    return pkg ? pkg.name : 'Unknown Package';
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -52,6 +47,9 @@ const HallHireSchedule: React.FC<HallHireScheduleProps> = ({ selectedDate }) => 
                 <span className="font-semibold text-sm">
                   {booking.startTime} - {booking.endTime}
                 </span>
+                <span className="text-xs text-gray-500">
+                  ({booking.duration} hour{booking.duration !== 1 ? 's' : ''})
+                </span>
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(booking.status)}`}>
                 {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -60,7 +58,7 @@ const HallHireSchedule: React.FC<HallHireScheduleProps> = ({ selectedDate }) => 
             
             <div className="space-y-1 text-sm">
               <div className="font-medium text-gray-800">
-                {getPackageName(booking.packageId)} - {booking.eventType}
+                {booking.eventType} - £{booking.totalPrice}
               </div>
               <div className="text-gray-600">
                 <Users className="w-3 h-3 inline mr-1" />
