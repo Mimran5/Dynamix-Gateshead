@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { createCustomer, createSubscription } from '../services/subscriptionService';
 import { User } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
+import { db } from '../utils/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 const Membership: React.FC = () => {
@@ -116,10 +116,8 @@ const Membership: React.FC = () => {
         {showPaymentForm && selectedMembership && clientSecret && (
           <div className="max-w-md mx-auto mb-8">
             <StripeProvider
-              amount={(memberships.find(m => m.id === selectedMembership)?.price || 0) * 100}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
-              clientSecret={clientSecret}
             />
             {paymentError && (
               <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
