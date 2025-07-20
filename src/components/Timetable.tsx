@@ -88,6 +88,20 @@ const Timetable: React.FC = () => {
     }
   };
 
+  // Helper function to convert time to minutes for easier comparison
+  const timeToMinutes = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Helper function to add minutes to time
+  const addMinutesToTime = (time: string, minutes: number) => {
+    const totalMinutes = timeToMinutes(time) + minutes;
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  };
+
   // Sort classes by day and time
   const sortedClasses = classes.sort((a, b) => {
     // Sort by day first, then by time
@@ -101,6 +115,33 @@ const Timetable: React.FC = () => {
     acc[day] = sortedClasses.filter(classItem => classItem.day === day);
     return acc;
   }, {} as Record<string, typeof sortedClasses>);
+
+  // Get all unique times and create time slots
+  const getAllTimeSlots = () => {
+    const allTimes = new Set<string>();
+    
+    // Add start times
+    sortedClasses.forEach(c => allTimes.add(c.time));
+    
+    // Add end times
+    sortedClasses.forEach(c => {
+      const endTime = addMinutesToTime(c.time, c.duration);
+      allTimes.add(endTime);
+    });
+    
+    return Array.from(allTimes).sort();
+  };
+
+  // Check if a class occupies a specific time slot
+  const getClassAtTimeSlot = (day: string, timeSlot: string) => {
+    return groupedClasses[day]?.find(classItem => {
+      const classStart = timeToMinutes(classItem.time);
+      const classEnd = timeToMinutes(classItem.time) + classItem.duration;
+      const slotTime = timeToMinutes(timeSlot);
+      
+      return slotTime >= classStart && slotTime < classEnd;
+    });
+  };
 
   // Debug logging for classes
   useEffect(() => {
@@ -128,12 +169,14 @@ const Timetable: React.FC = () => {
     );
   }
 
+  const timeSlots = getAllTimeSlots();
+
   return (
     <div className="timetable-section container mx-auto px-4 py-4 max-w-7xl">
       <div className="mb-4">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Weekly Class Schedule</h2>
-          <p className="text-gray-600 text-sm">Hover over classes for details • 45min classes are highlighted</p>
+          <p className="text-gray-600 text-sm">Classes block out their full duration • Hover for details</p>
         </div>
       </div>
 
@@ -147,7 +190,7 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      {/* Ultra Compact Schedule Layout */}
+      {/* Schedule Layout with Duration Blocking */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Schedule Header */}
         <div className="bg-gray-50 border-b border-gray-200">
@@ -163,20 +206,20 @@ const Timetable: React.FC = () => {
 
         {/* Schedule Body */}
         <div className="divide-y divide-gray-100">
-          {/* Get all unique times */}
-          {(() => {
-            const allTimes = [...new Set(sortedClasses.map(c => c.time))].sort();
+          {timeSlots.map((timeSlot, index) => {
+            const nextTimeSlot = timeSlots[index + 1];
+            const isLastSlot = index === timeSlots.length - 1;
             
-            return allTimes.map(time => (
-              <div key={time} className="grid grid-cols-6 gap-1 p-1 hover:bg-gray-50 transition-colors">
+            return (
+              <div key={timeSlot} className="grid grid-cols-6 gap-1 p-1 hover:bg-gray-50 transition-colors">
                 {/* Time Column */}
                 <div className="font-bold text-gray-800 text-xs flex items-center px-1">
-                  {time}
+                  {timeSlot}
                 </div>
                 
                 {/* Day Columns */}
                 {days.map(day => {
-                  const classAtTime = groupedClasses[day]?.find(c => c.time === time);
+                  const classAtTime = getClassAtTimeSlot(day, timeSlot);
                   
                   if (!classAtTime) {
                     return (
@@ -189,6 +232,7 @@ const Timetable: React.FC = () => {
                   const isBooked = userBookings.some(booking => 
                     booking.classId === classAtTime.id && booking.status === 'confirmed'
                   );
+                  const isClassStart = classAtTime.time === timeSlot;
                   const isLongClass = classAtTime.duration >= 45;
 
                   return (
@@ -202,15 +246,17 @@ const Timetable: React.FC = () => {
                         onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
-                        {/* Only Class Name Visible */}
-                        <div className={`text-xs font-medium text-gray-800 text-center leading-tight ${
-                          isLongClass ? 'font-bold' : ''
-                        }`}>
-                          {classAtTime.name.split(' ').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ')}
-                          {isLongClass && <span className="text-blue-600 ml-1">(45min)</span>}
-                        </div>
+                        {/* Only show class name at the start of the class */}
+                        {isClassStart && (
+                          <div className={`text-xs font-medium text-gray-800 text-center leading-tight ${
+                            isLongClass ? 'font-bold' : ''
+                          }`}>
+                            {classAtTime.name.split(' ').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(' ')}
+                            {isLongClass && <span className="text-blue-600 ml-1">({classAtTime.duration}min)</span>}
+                          </div>
+                        )}
 
                         {/* Hover details popup */}
                         {hoveredClass === classAtTime.id && (
@@ -220,17 +266,15 @@ const Timetable: React.FC = () => {
                                 <span className={`px-2 py-1 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
                                   {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
                                 </span>
-                                {isLongClass && (
-                                  <span className="text-blue-600 font-medium text-xs bg-blue-100 px-2 py-1 rounded">45min</span>
-                                )}
+                                <span className="text-blue-600 font-medium text-xs bg-blue-100 px-2 py-1 rounded">{classAtTime.duration}min</span>
                                 {isBooked && (
                                   <span className="text-blue-600 font-medium text-xs">✓ Booked</span>
                                 )}
                               </div>
                               <div><span className="font-semibold">Class:</span> {classAtTime.name}</div>
+                              <div><span className="font-semibold">Time:</span> {classAtTime.time} - {addMinutesToTime(classAtTime.time, classAtTime.duration)}</div>
                               <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
                               <div><span className="font-semibold">Level:</span> {classAtTime.level}</div>
-                              <div><span className="font-semibold">Duration:</span> {classAtTime.duration} minutes</div>
                               <div><span className="font-semibold">Available:</span> {classAtTime.spotsLeft} out of {classAtTime.maxSpots}</div>
                             </div>
                             
@@ -265,8 +309,8 @@ const Timetable: React.FC = () => {
                   );
                 })}
               </div>
-            ));
-          })()}
+            );
+          })}
         </div>
       </div>
 
