@@ -88,6 +88,29 @@ const Timetable: React.FC = () => {
     }
   };
 
+  // Color coding for timetable blocks
+  const getTimetableBlockColor = (type: string, isStart: boolean) => {
+    const baseColors = {
+      'gymnastics': 'bg-purple-50 border-purple-200 hover:bg-purple-100',
+      'kickboxing': 'bg-red-50 border-red-200 hover:bg-red-100',
+      'yoga': 'bg-green-50 border-green-200 hover:bg-green-100',
+      'pilates': 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+      'aerobics': 'bg-orange-50 border-orange-200 hover:bg-orange-100',
+      'karate': 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
+      'zumba': 'bg-pink-50 border-pink-200 hover:bg-pink-100',
+      'default': 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+    };
+
+    const color = baseColors[type.toLowerCase() as keyof typeof baseColors] || baseColors.default;
+    
+    if (isStart) {
+      return color;
+    } else {
+      // For running time slots, use a lighter version
+      return color.replace('bg-', 'bg-').replace('hover:bg-', 'hover:bg-').replace('-50', '-25').replace('-100', '-75');
+    }
+  };
+
   // Helper function to convert time to minutes for easier comparison
   const timeToMinutes = (time: string) => {
     const [hours, minutes] = time.split(':').map(Number);
@@ -173,6 +196,23 @@ const Timetable: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Weekly Class Schedule</h2>
           <p className="text-gray-600 text-sm">Classes block out their full duration • Hover for details</p>
         </div>
+        
+        {/* Color Legend */}
+        <div className="flex flex-wrap justify-center gap-2 mb-4">
+          {[
+            { type: 'gymnastics', label: 'Gymnastics' },
+            { type: 'kickboxing', label: 'Kickboxing' },
+            { type: 'yoga', label: 'Yoga' },
+            { type: 'pilates', label: 'Pilates' },
+            { type: 'aerobics', label: 'Aerobics' },
+            { type: 'karate', label: 'Karate' },
+            { type: 'zumba', label: 'Zumba' }
+          ].map(({ type, label }) => (
+            <div key={type} className={`px-3 py-1 rounded-full text-xs font-medium border ${getClassTypeColor(type)}`}>
+              {label}
+            </div>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -232,10 +272,8 @@ const Timetable: React.FC = () => {
                   <div key={day} className="relative">
                     <div
                       className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm min-h-[30px] ${
-                        isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
-                      } flex items-center justify-center ${
-                        isClassStart ? 'bg-gray-50' : 'bg-gray-25'
-                      }`}
+                        isBooked ? 'border-blue-500 bg-blue-50' : getTimetableBlockColor(classRunningAtTime.type, isClassStart)
+                      } flex items-center justify-center`}
                       onMouseEnter={() => setHoveredClass(classRunningAtTime.id)}
                       onMouseLeave={() => setHoveredClass(null)}
                     >
