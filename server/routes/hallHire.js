@@ -166,7 +166,7 @@ router.post('/book', async (req, res) => {
         
         <p>If you have any questions, please don't hesitate to contact us:</p>
         <p>📞 0191 XXX XXXX<br>
-        📧 hallhire@dynamixgateshead.com</p>
+        📧 info@dynamixdga.com</p>
         
         <p>Best regards,<br>
         The Dynamix Gateshead Team</p>

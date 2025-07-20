@@ -34,10 +34,10 @@ const HallHire: React.FC = () => {
                 <MapPin className="w-5 h-5 mr-2" />
                 <span>Central Gateshead Location</span>
               </div>
-              <div className="flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                <span>Up to 100 People</span>
-              </div>
+                          <div className="flex items-center">
+              <Users className="w-5 h-5 mr-2" />
+              <span>Up to 30 People</span>
+            </div>
               <div className="flex items-center">
                 <Clock className="w-5 h-5 mr-2" />
                 <span>Flexible Booking Times</span>
@@ -61,16 +61,16 @@ const HallHire: React.FC = () => {
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-primary-700" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Flexible Capacity</h3>
-            <p className="text-gray-600">Accommodate events from 10 to 100 people with various package options</p>
+            <h3 className="text-xl font-semibold mb-2">Perfect Size</h3>
+            <p className="text-gray-600">Ideal venue for events up to 30 people with chairs and tables included</p>
           </div>
-          <div className="text-center">
-            <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-primary-700" />
+                      <div className="text-center">
+              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-primary-700" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Simple Setup</h3>
+              <p className="text-gray-600">Chairs and tables included, kitchen access, and flexible booking times</p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Professional Setup</h3>
-            <p className="text-gray-600">Fully equipped with sound systems, projectors, and professional facilities</p>
-          </div>
         </div>
 
         {/* Packages Section */}
@@ -181,18 +181,6 @@ const HallHire: React.FC = () => {
                   <span className="text-green-500 mr-2">•</span>
                   <span className="text-sm">Event planning consultation available</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span className="text-sm">Catering options can be arranged</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span className="text-sm">Professional photography setup</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">•</span>
-                  <span className="text-sm">Security services available</span>
-                </li>
               </ul>
             </div>
           </div>
@@ -209,7 +197,7 @@ const HallHire: React.FC = () => {
             </div>
             <div className="flex items-center">
               <Mail className="w-5 h-5 mr-2" />
-              <span>Email: hallhire@dynamixgateshead.com</span>
+              <span>Email: info@dynamixdga.com</span>
             </div>
           </div>
         </div>

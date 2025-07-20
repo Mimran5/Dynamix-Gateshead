@@ -7,9 +7,9 @@ The Hall Hire feature has been successfully added to the Dynamix Gateshead websi
 
 ### 1. Hall Hire Packages
 - **Hourly Rate**: £25 per hour (up to 30 people)
-- **Half Day Package**: £120 (4 hours, up to 50 people) - *Most Popular*
-- **Full Day Package**: £200 (8 hours, up to 80 people)
-- **Weekend Special**: £350 (full weekend access, up to 100 people)
+- **Half Day Package**: £120 (4 hours, up to 30 people) - *Most Popular*
+- **Full Day Package**: £200 (8 hours, up to 30 people)
+- **Weekend Special**: £350 (full weekend access, up to 30 people)
 
 ### 2. Frontend Components
 
@@ -108,6 +108,7 @@ The system uses Gmail SMTP for sending booking confirmations:
 - Customer receives booking confirmation email
 - Admin receives notification of new booking enquiry
 - Professional HTML email templates included
+- Contact email: info@dynamixdga.com
 
 ## Usage
 

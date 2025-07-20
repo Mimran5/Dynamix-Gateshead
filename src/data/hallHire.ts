@@ -23,7 +23,7 @@ export const hallHirePackages: HallHirePackage[] = [
     capacity: 30,
     features: [
       'Flexible booking times',
-      'Basic equipment included',
+      'Chairs and tables included',
       'Changing facilities',
       'Parking available',
       'Kitchen access'
@@ -35,8 +35,7 @@ export const hallHirePackages: HallHirePackage[] = [
     ],
     includes: [
       'Main hall space',
-      'Basic sound system',
-      'Tables and chairs',
+      'Chairs and tables',
       'Cleaning supplies'
     ],
     restrictions: [
@@ -52,12 +51,10 @@ export const hallHirePackages: HallHirePackage[] = [
     description: 'Ideal for workshops, training sessions, or medium-sized events',
     price: 120,
     duration: '4 Hours',
-    capacity: 50,
+    capacity: 30,
     features: [
       '4 hours of exclusive use',
-      'Enhanced equipment setup',
-      'Professional sound system',
-      'Projector and screen',
+      'Chairs and tables included',
       'Kitchen facilities',
       'Free parking for attendees'
     ],
@@ -69,31 +66,28 @@ export const hallHirePackages: HallHirePackage[] = [
     ],
     includes: [
       'Main hall space',
-      'Professional sound system',
-      'Projector and screen',
-      'Tables and chairs setup',
+      'Chairs and tables',
       'Kitchen access',
       'Cleaning service included'
     ],
     restrictions: [
       'No alcohol without prior permission',
       'No smoking',
-      'Maximum 50 people',
+      'Maximum 30 people',
       'Events must end by closing time'
     ]
   },
   {
     id: 'full-day',
     name: 'Full Day Package',
-    description: 'Complete venue hire for large events, parties, or all-day activities',
+    description: 'Complete venue hire for events, parties, or all-day activities',
     price: 200,
     duration: '8 Hours',
-    capacity: 80,
+    capacity: 30,
     features: [
       '8 hours of exclusive use',
       'Full venue access',
-      'Professional equipment',
-      'Event planning support',
+      'Chairs and tables included',
       'Setup and cleanup included',
       'Priority booking'
     ],
@@ -104,17 +98,14 @@ export const hallHirePackages: HallHirePackage[] = [
     ],
     includes: [
       'Full venue access',
-      'Professional sound system',
-      'Projector and screen',
-      'Complete furniture setup',
+      'Chairs and tables',
       'Kitchen facilities',
-      'Setup and cleanup service',
-      'Event coordinator support'
+      'Setup and cleanup service'
     ],
     restrictions: [
       'No alcohol without prior permission',
       'No smoking',
-      'Maximum 80 people',
+      'Maximum 30 people',
       'Events must end by closing time',
       'Security deposit required'
     ]
@@ -125,13 +116,12 @@ export const hallHirePackages: HallHirePackage[] = [
     description: 'Perfect for weekend events, parties, or special occasions',
     price: 350,
     duration: 'Weekend',
-    capacity: 100,
+    capacity: 30,
     features: [
       'Full weekend access',
       'Complete venue control',
-      'Premium equipment',
-      'Event planning consultation',
-      'Catering kitchen access',
+      'Chairs and tables included',
+      'Kitchen access',
       'Outdoor space included'
     ],
     availableTimes: [
@@ -141,18 +131,15 @@ export const hallHirePackages: HallHirePackage[] = [
     ],
     includes: [
       'Full venue access',
-      'Premium sound system',
-      'Professional lighting',
-      'Complete furniture setup',
-      'Catering kitchen',
+      'Chairs and tables',
+      'Kitchen facilities',
       'Outdoor space',
-      'Event planning consultation',
       'Setup and cleanup service'
     ],
     restrictions: [
       'Alcohol permitted with license',
       'No smoking inside',
-      'Maximum 100 people',
+      'Maximum 30 people',
       'Security deposit required',
       'Insurance certificate required'
     ]

@@ -29,16 +29,16 @@ const HallHirePreview: React.FC = () => {
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-primary-700" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Flexible Capacity</h3>
-            <p className="text-gray-600">Accommodate events from 10 to 100 people</p>
+            <h3 className="text-xl font-semibold mb-2">Perfect Size</h3>
+            <p className="text-gray-600">Ideal venue for events up to 30 people</p>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-primary-700" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Professional Setup</h3>
-            <p className="text-gray-600">Fully equipped with sound systems and facilities</p>
+            <h3 className="text-xl font-semibold mb-2">Simple Setup</h3>
+            <p className="text-gray-600">Chairs and tables included with kitchen access</p>
           </div>
         </div>
 
@@ -53,15 +53,15 @@ const HallHirePreview: React.FC = () => {
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Half Day: £120 (4 hours, up to 50 people)</span>
+                  <span>Half Day: £120 (4 hours, up to 30 people)</span>
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Full Day: £200 (8 hours, up to 80 people)</span>
+                  <span>Full Day: £200 (8 hours, up to 30 people)</span>
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Weekend Special: £350 (full weekend access)</span>
+                  <span>Weekend Special: £350 (full weekend access, up to 30 people)</span>
                 </li>
               </ul>
               <p className="text-gray-600 mb-6">
@@ -76,7 +76,7 @@ const HallHirePreview: React.FC = () => {
                 <p className="mb-4">Contact us to discuss your requirements and secure your date</p>
                 <div className="text-sm space-y-1">
                   <p>📞 0191 XXX XXXX</p>
-                  <p>📧 hallhire@dynamixgateshead.com</p>
+                  <p>📧 info@dynamixdga.com</p>
                 </div>
               </div>
               
