@@ -130,15 +130,15 @@ const Timetable: React.FC = () => {
 
   return (
     <div className="timetable-section container mx-auto px-4 py-4 max-w-7xl">
-      <div className="mb-6">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Weekly Class Schedule</h2>
-          <p className="text-gray-600">Complete weekly timetable with all classes</p>
+      <div className="mb-4">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">Weekly Class Schedule</h2>
+          <p className="text-gray-600 text-sm">Complete weekly timetable</p>
         </div>
       </div>
 
       {error && (
-        <div className={`px-4 py-3 rounded mb-4 text-sm ${
+        <div className={`px-3 py-2 rounded mb-3 text-sm ${
           error.includes('successfully') 
             ? 'bg-green-100 border border-green-400 text-green-700'
             : 'bg-red-100 border border-red-400 text-red-700'
@@ -147,14 +147,14 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      {/* Unified Schedule Layout */}
+      {/* Compact Schedule Layout */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Schedule Header */}
         <div className="bg-gray-50 border-b border-gray-200">
-          <div className="grid grid-cols-8 gap-2 p-3">
-            <div className="font-bold text-gray-700 text-sm">Time</div>
+          <div className="grid grid-cols-8 gap-1 p-2">
+            <div className="font-bold text-gray-700 text-xs">Time</div>
             {days.map(day => (
-              <div key={day} className="font-bold text-gray-700 text-center text-sm">
+              <div key={day} className="font-bold text-gray-700 text-center text-xs">
                 {day}
               </div>
             ))}
@@ -162,15 +162,15 @@ const Timetable: React.FC = () => {
         </div>
 
         {/* Schedule Body */}
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-100">
           {/* Get all unique times */}
           {(() => {
             const allTimes = [...new Set(sortedClasses.map(c => c.time))].sort();
             
             return allTimes.map(time => (
-              <div key={time} className="grid grid-cols-8 gap-2 p-3 hover:bg-gray-50 transition-colors">
+              <div key={time} className="grid grid-cols-8 gap-1 p-1 hover:bg-gray-50 transition-colors">
                 {/* Time Column */}
-                <div className="font-bold text-gray-800 text-sm flex items-center">
+                <div className="font-bold text-gray-800 text-xs flex items-center px-1">
                   {time}
                 </div>
                 
@@ -180,7 +180,7 @@ const Timetable: React.FC = () => {
                   
                   if (!classAtTime) {
                     return (
-                      <div key={day} className="text-center text-gray-300 text-xs py-1">
+                      <div key={day} className="text-center text-gray-200 text-xs py-1">
                         -
                       </div>
                     );
@@ -193,35 +193,35 @@ const Timetable: React.FC = () => {
                   return (
                     <div key={day} className="relative">
                       <div
-                        className={`border rounded p-2 cursor-pointer transition-all hover:shadow-sm min-h-[60px] ${
+                        className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm min-h-[40px] ${
                           isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                         }`}
                         onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
                         {/* Class Type Badge */}
-                        <div className="mb-1">
+                        <div className="mb-0.5">
                           <span className={`px-1 py-0.5 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
                             {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
                           </span>
                         </div>
                         
-                        {/* Class Name - Compact */}
-                        <h4 className="font-bold text-xs text-gray-800 mb-1 leading-tight">
+                        {/* Class Name - Very Compact */}
+                        <h4 className="font-bold text-xs text-gray-800 mb-0.5 leading-tight">
                           {classAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
                         </h4>
                         
-                        {/* Instructor - Compact */}
-                        <div className="text-xs text-gray-600 mb-1">
+                        {/* Instructor - Very Compact */}
+                        <div className="text-xs text-gray-600 mb-0.5">
                           {classAtTime.instructor}
                         </div>
 
-                        {/* Booking Status - Compact */}
+                        {/* Quick Info - Very Compact */}
                         <div className="text-xs text-gray-500">
                           {isBooked ? (
-                            <span className="text-blue-600 font-medium">Booked</span>
+                            <span className="text-blue-600 font-medium">✓ Booked</span>
                           ) : (
                             <span>{classAtTime.spotsLeft} spots</span>
                           )}
@@ -229,7 +229,7 @@ const Timetable: React.FC = () => {
 
                         {/* Hover details popup */}
                         {hoveredClass === classAtTime.id && (
-                          <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs min-w-[200px]">
+                          <div className="absolute z-30 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs min-w-[220px]">
                             <div className="space-y-1 mb-3">
                               <div><span className="font-semibold">Class:</span> {classAtTime.name}</div>
                               <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
@@ -276,14 +276,14 @@ const Timetable: React.FC = () => {
 
       {/* No classes message */}
       {sortedClasses.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow-lg">
+        <div className="text-center py-8 bg-white rounded-lg shadow-lg">
           <div className="text-gray-500 text-lg mb-2">No classes scheduled</div>
           <div className="text-gray-400 text-sm">Check back later for updates</div>
         </div>
       )}
 
       {/* Hall Hire Schedule */}
-      <div className="mt-12">
+      <div className="mt-8">
         <HallHireSchedule />
       </div>
     </div>
