@@ -133,7 +133,7 @@ const Timetable: React.FC = () => {
       <div className="mb-4">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800 mb-1">Weekly Class Schedule</h2>
-          <p className="text-gray-600 text-sm">Hover over classes for details</p>
+          <p className="text-gray-600 text-sm">Hover over classes for details • 45min classes are highlighted</p>
         </div>
       </div>
 
@@ -189,21 +189,27 @@ const Timetable: React.FC = () => {
                   const isBooked = userBookings.some(booking => 
                     booking.classId === classAtTime.id && booking.status === 'confirmed'
                   );
+                  const isLongClass = classAtTime.duration >= 45;
 
                   return (
                     <div key={day} className="relative">
                       <div
-                        className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm min-h-[30px] flex items-center justify-center ${
+                        className={`border rounded p-1 cursor-pointer transition-all hover:shadow-sm ${
+                          isLongClass ? 'min-h-[50px] bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300' : 'min-h-[30px]'
+                        } ${
                           isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
-                        }`}
+                        } flex items-center justify-center`}
                         onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
                         {/* Only Class Name Visible */}
-                        <div className="text-xs font-medium text-gray-800 text-center leading-tight">
+                        <div className={`text-xs font-medium text-gray-800 text-center leading-tight ${
+                          isLongClass ? 'font-bold' : ''
+                        }`}>
                           {classAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
+                          {isLongClass && <span className="text-blue-600 ml-1">(45min)</span>}
                         </div>
 
                         {/* Hover details popup */}
@@ -214,6 +220,9 @@ const Timetable: React.FC = () => {
                                 <span className={`px-2 py-1 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
                                   {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
                                 </span>
+                                {isLongClass && (
+                                  <span className="text-blue-600 font-medium text-xs bg-blue-100 px-2 py-1 rounded">45min</span>
+                                )}
                                 {isBooked && (
                                   <span className="text-blue-600 font-medium text-xs">✓ Booked</span>
                                 )}
