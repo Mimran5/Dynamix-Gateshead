@@ -64,7 +64,7 @@ const Timetable: React.FC = () => {
     }
   };
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Sunday'];
 
   // Color coding for class types
   const getClassTypeColor = (type: string) => {
@@ -151,7 +151,7 @@ const Timetable: React.FC = () => {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Schedule Header */}
         <div className="bg-gray-50 border-b border-gray-200">
-          <div className="grid grid-cols-8 gap-1 p-2">
+          <div className="grid grid-cols-6 gap-1 p-2">
             <div className="font-bold text-gray-700 text-xs">Time</div>
             {days.map(day => (
               <div key={day} className="font-bold text-gray-700 text-center text-xs">
@@ -168,7 +168,7 @@ const Timetable: React.FC = () => {
             const allTimes = [...new Set(sortedClasses.map(c => c.time))].sort();
             
             return allTimes.map(time => (
-              <div key={time} className="grid grid-cols-8 gap-1 p-1 hover:bg-gray-50 transition-colors">
+              <div key={time} className="grid grid-cols-6 gap-1 p-1 hover:bg-gray-50 transition-colors">
                 {/* Time Column */}
                 <div className="font-bold text-gray-800 text-xs flex items-center px-1">
                   {time}
