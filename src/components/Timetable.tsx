@@ -132,7 +132,7 @@ const Timetable: React.FC = () => {
       <div className="mb-6">
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Weekly Class Schedule</h2>
-          <p className="text-gray-600">View all our classes organized by day and time</p>
+          <p className="text-gray-600">Complete weekly timetable with all classes</p>
         </div>
       </div>
 
@@ -146,90 +146,111 @@ const Timetable: React.FC = () => {
         </div>
       )}
 
-      {/* Day-by-Day Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {days.map(day => {
-          const dayClasses = groupedClasses[day];
-          
-          return (
-            <div key={day} className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 border-b border-gray-200 pb-3">
+      {/* Unified Schedule Layout */}
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Schedule Header */}
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="grid grid-cols-8 gap-4 p-4">
+            <div className="font-bold text-gray-700">Time</div>
+            {days.map(day => (
+              <div key={day} className="font-bold text-gray-700 text-center">
                 {day}
-              </h3>
-              
-              {dayClasses && dayClasses.length > 0 ? (
-                <div className="space-y-3">
-                  {dayClasses.map(classItem => {
-                    const isBooked = userBookings.some(booking => 
-                      booking.classId === classItem.id && booking.status === 'confirmed'
-                    );
-                    
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Schedule Body */}
+        <div className="divide-y divide-gray-200">
+          {/* Get all unique times */}
+          {(() => {
+            const allTimes = [...new Set(sortedClasses.map(c => c.time))].sort();
+            
+            return allTimes.map(time => (
+              <div key={time} className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-50 transition-colors">
+                {/* Time Column */}
+                <div className="font-bold text-gray-800 text-sm flex items-center">
+                  {time}
+                </div>
+                
+                {/* Day Columns */}
+                {days.map(day => {
+                  const classAtTime = groupedClasses[day]?.find(c => c.time === time);
+                  
+                  if (!classAtTime) {
                     return (
+                      <div key={day} className="text-center text-gray-400 text-sm py-2">
+                        -
+                      </div>
+                    );
+                  }
+
+                  const isBooked = userBookings.some(booking => 
+                    booking.classId === classAtTime.id && booking.status === 'confirmed'
+                  );
+
+                  return (
+                    <div key={day} className="relative">
                       <div
-                        key={classItem.id}
-                        className={`relative border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                        className={`border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${
                           isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                         }`}
-                        onMouseEnter={() => setHoveredClass(classItem.id)}
+                        onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
-                        {/* Time and Class Type */}
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="font-bold text-lg text-gray-800">
-                            {classItem.time}
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getClassTypeColor(classItem.type)}`}>
-                            {classItem.type.charAt(0).toUpperCase() + classItem.type.slice(1)}
+                        {/* Class Type Badge */}
+                        <div className="mb-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
+                            {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
                           </span>
                         </div>
                         
                         {/* Class Name */}
-                        <h4 className="font-bold text-base text-gray-800 mb-2">
-                          {classItem.name.split(' ').map(word => 
+                        <h4 className="font-bold text-sm text-gray-800 mb-1">
+                          {classAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
                         </h4>
                         
                         {/* Instructor */}
-                        <div className="text-sm text-gray-600 mb-3">
-                          <span className="font-medium">Instructor:</span> {classItem.instructor}
+                        <div className="text-xs text-gray-600 mb-2">
+                          {classAtTime.instructor}
                         </div>
 
                         {/* Quick Info */}
-                        <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
-                          <span>Level: {classItem.level}</span>
-                          <span>{classItem.duration} min</span>
-                          <span>{classItem.spotsLeft}/{classItem.maxSpots} spots</span>
+                        <div className="text-xs text-gray-500 mb-2">
+                          <div>Level: {classAtTime.level}</div>
+                          <div>{classAtTime.spotsLeft}/{classAtTime.maxSpots} spots</div>
                         </div>
 
                         {/* Booking Button */}
                         {user && (
                           <button
-                            onClick={() => isBooked ? handleCancelBooking(classItem.id) : handleBookClass(classItem.id)}
-                            disabled={loading || (!isBooked && classItem.spotsLeft === 0)}
-                            className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                            onClick={() => isBooked ? handleCancelBooking(classAtTime.id) : handleBookClass(classAtTime.id)}
+                            disabled={loading || (!isBooked && classAtTime.spotsLeft === 0)}
+                            className={`w-full py-1 px-2 rounded text-xs font-medium transition-colors ${
                               isBooked
                                 ? 'bg-red-500 hover:bg-red-600 text-white'
-                                : classItem.spotsLeft === 0
+                                : classAtTime.spotsLeft === 0
                                 ? 'bg-gray-300 cursor-not-allowed text-gray-500'
                                 : 'bg-blue-500 hover:bg-blue-600 text-white'
                             }`}
                           >
-                            {loading ? 'Processing...' : 
-                              isBooked ? 'Cancel Booking' : 
-                              classItem.spotsLeft === 0 ? 'Class Full' : 'Book Class'
+                            {loading ? '...' : 
+                              isBooked ? 'Cancel' : 
+                              classAtTime.spotsLeft === 0 ? 'Full' : 'Book'
                             }
                           </button>
                         )}
 
                         {/* Hover details popup */}
-                        {hoveredClass === classItem.id && (
-                          <div className="absolute z-10 left-0 right-0 top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-xl p-4 text-sm">
-                            <div className="space-y-2 mb-3">
-                              <div><span className="font-semibold">Level:</span> {classItem.level}</div>
-                              <div><span className="font-semibold">Duration:</span> {classItem.duration} minutes</div>
-                              <div><span className="font-semibold">Available Spots:</span> {classItem.spotsLeft} out of {classItem.maxSpots}</div>
-                              <div><span className="font-semibold">Instructor:</span> {classItem.instructor}</div>
+                        {hoveredClass === classAtTime.id && (
+                          <div className="absolute z-10 left-0 right-0 top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs">
+                            <div className="space-y-1 mb-2">
+                              <div><span className="font-semibold">Level:</span> {classAtTime.level}</div>
+                              <div><span className="font-semibold">Duration:</span> {classAtTime.duration} minutes</div>
+                              <div><span className="font-semibold">Available:</span> {classAtTime.spotsLeft} out of {classAtTime.maxSpots}</div>
+                              <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
                             </div>
                             
                             {!user && (
@@ -240,19 +261,22 @@ const Timetable: React.FC = () => {
                           </div>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="text-lg mb-2">No classes scheduled</div>
-                  <div className="text-sm">Check back later for updates</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    </div>
+                  );
+                })}
+              </div>
+            ));
+          })()}
+        </div>
       </div>
+
+      {/* No classes message */}
+      {sortedClasses.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-lg shadow-lg">
+          <div className="text-gray-500 text-lg mb-2">No classes scheduled</div>
+          <div className="text-gray-400 text-sm">Check back later for updates</div>
+        </div>
+      )}
 
       {/* Hall Hire Schedule */}
       <div className="mt-12">
