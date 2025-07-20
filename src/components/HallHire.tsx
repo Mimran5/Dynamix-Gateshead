@@ -18,10 +18,10 @@ const HallHire: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary-700 to-primary-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Hall Hire
@@ -48,8 +48,8 @@ const HallHire: React.FC = () => {
       </div>
 
       {/* Features Overview */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           <div className="text-center">
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-8 h-8 text-primary-700" />
@@ -74,9 +74,9 @@ const HallHire: React.FC = () => {
         </div>
 
         {/* Packages Section */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Hall Hire Packages</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-center mb-8">Hall Hire Packages</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {hallHirePackages.map((pkg) => (
               <div
                 key={pkg.id}
@@ -131,7 +131,7 @@ const HallHire: React.FC = () => {
         </div>
 
         {/* Detailed Information */}
-        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+        <div className="grid lg:grid-cols-2 gap-12 mb-12">
           {/* What's Included */}
           <div>
             <h3 className="text-2xl font-bold mb-6">What's Included</h3>
@@ -160,7 +160,7 @@ const HallHire: React.FC = () => {
         </div>
 
         {/* Restrictions */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-16">
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
           <h3 className="text-2xl font-bold mb-6">Important Information</h3>
           <div className="grid md:grid-cols-2 gap-8">
             <div>

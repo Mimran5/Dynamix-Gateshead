@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 
 const HallHirePreview: React.FC = () => {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Hall Hire Available
           </h2>
@@ -16,7 +16,7 @@ const HallHirePreview: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-8 h-8 text-primary-700" />
@@ -42,8 +42,8 @@ const HallHirePreview: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
               <h3 className="text-2xl font-bold mb-4">Hall Hire Packages</h3>
               <ul className="space-y-3 mb-6">

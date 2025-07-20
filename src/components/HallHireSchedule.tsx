@@ -35,8 +35,8 @@ const HallHireSchedule: React.FC<HallHireScheduleProps> = ({ selectedDate }) => 
   };
 
   return (
-    <div className="mt-6">
-      <h3 className="text-lg font-semibold mb-3 flex items-center">
+    <div className="mt-8">
+      <h3 className="text-lg font-semibold mb-4 flex items-center">
         <Building className="w-5 h-5 mr-2" />
         Hall Hire Bookings
       </h3>

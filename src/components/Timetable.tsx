@@ -152,7 +152,7 @@ const Timetable: React.FC = () => {
   }
 
   return (
-    <div className="timetable-section container mx-auto px-4 py-6 max-w-7xl">
+    <div className="timetable-section container mx-auto px-4 py-4 max-w-7xl">
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Class Schedule</h2>
