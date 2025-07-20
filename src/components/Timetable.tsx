@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
-import { forceUpdateClasses } from '../utils/forceUpdateClasses';
 import HallHireSchedule from './HallHireSchedule';
 
 const Timetable: React.FC = () => {
@@ -11,7 +10,6 @@ const Timetable: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredClass, setHoveredClass] = useState<string | null>(null);
-  const [updating, setUpdating] = useState<boolean>(false);
 
   // Debug logging
   useEffect(() => {
@@ -65,24 +63,6 @@ const Timetable: React.FC = () => {
       setError('Failed to cancel booking. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleForceUpdate = async () => {
-    setUpdating(true);
-    setError(null);
-    
-    try {
-      await forceUpdateClasses();
-      setError('Classes updated successfully! The page will refresh automatically in 3 seconds...');
-      // Auto-refresh after 3 seconds
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
-    } catch (err: any) {
-      setError('Failed to update classes: ' + err.message);
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -156,13 +136,6 @@ const Timetable: React.FC = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Class Schedule</h2>
-          <button
-            onClick={handleForceUpdate}
-            disabled={updating}
-            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm"
-          >
-            {updating ? 'Updating...' : 'Update All Classes'}
-          </button>
         </div>
         
         {/* Filter buttons */}
