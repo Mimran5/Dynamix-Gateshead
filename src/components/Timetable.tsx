@@ -105,7 +105,8 @@ const Timetable: React.FC = () => {
   // Debug logging for classes
   useEffect(() => {
     console.log('Sorted Classes:', sortedClasses);
-  }, [sortedClasses]);
+    console.log('Grouped Classes:', groupedClasses);
+  }, [sortedClasses, groupedClasses]);
 
   // Add loading state display
   if (contextLoading) {
@@ -150,10 +151,10 @@ const Timetable: React.FC = () => {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Schedule Header */}
         <div className="bg-gray-50 border-b border-gray-200">
-          <div className="grid grid-cols-8 gap-4 p-4">
-            <div className="font-bold text-gray-700">Time</div>
+          <div className="grid grid-cols-8 gap-2 p-3">
+            <div className="font-bold text-gray-700 text-sm">Time</div>
             {days.map(day => (
-              <div key={day} className="font-bold text-gray-700 text-center">
+              <div key={day} className="font-bold text-gray-700 text-center text-sm">
                 {day}
               </div>
             ))}
@@ -167,7 +168,7 @@ const Timetable: React.FC = () => {
             const allTimes = [...new Set(sortedClasses.map(c => c.time))].sort();
             
             return allTimes.map(time => (
-              <div key={time} className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-50 transition-colors">
+              <div key={time} className="grid grid-cols-8 gap-2 p-3 hover:bg-gray-50 transition-colors">
                 {/* Time Column */}
                 <div className="font-bold text-gray-800 text-sm flex items-center">
                   {time}
@@ -179,7 +180,7 @@ const Timetable: React.FC = () => {
                   
                   if (!classAtTime) {
                     return (
-                      <div key={day} className="text-center text-gray-400 text-sm py-2">
+                      <div key={day} className="text-center text-gray-300 text-xs py-1">
                         -
                       </div>
                     );
@@ -192,66 +193,69 @@ const Timetable: React.FC = () => {
                   return (
                     <div key={day} className="relative">
                       <div
-                        className={`border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${
+                        className={`border rounded p-2 cursor-pointer transition-all hover:shadow-sm min-h-[60px] ${
                           isBooked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                         }`}
                         onMouseEnter={() => setHoveredClass(classAtTime.id)}
                         onMouseLeave={() => setHoveredClass(null)}
                       >
                         {/* Class Type Badge */}
-                        <div className="mb-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
+                        <div className="mb-1">
+                          <span className={`px-1 py-0.5 rounded text-xs font-medium border ${getClassTypeColor(classAtTime.type)}`}>
                             {classAtTime.type.charAt(0).toUpperCase() + classAtTime.type.slice(1)}
                           </span>
                         </div>
                         
-                        {/* Class Name */}
-                        <h4 className="font-bold text-sm text-gray-800 mb-1">
+                        {/* Class Name - Compact */}
+                        <h4 className="font-bold text-xs text-gray-800 mb-1 leading-tight">
                           {classAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
                         </h4>
                         
-                        {/* Instructor */}
-                        <div className="text-xs text-gray-600 mb-2">
+                        {/* Instructor - Compact */}
+                        <div className="text-xs text-gray-600 mb-1">
                           {classAtTime.instructor}
                         </div>
 
-                        {/* Quick Info */}
-                        <div className="text-xs text-gray-500 mb-2">
-                          <div>Level: {classAtTime.level}</div>
-                          <div>{classAtTime.spotsLeft}/{classAtTime.maxSpots} spots</div>
+                        {/* Booking Status - Compact */}
+                        <div className="text-xs text-gray-500">
+                          {isBooked ? (
+                            <span className="text-blue-600 font-medium">Booked</span>
+                          ) : (
+                            <span>{classAtTime.spotsLeft} spots</span>
+                          )}
                         </div>
-
-                        {/* Booking Button */}
-                        {user && (
-                          <button
-                            onClick={() => isBooked ? handleCancelBooking(classAtTime.id) : handleBookClass(classAtTime.id)}
-                            disabled={loading || (!isBooked && classAtTime.spotsLeft === 0)}
-                            className={`w-full py-1 px-2 rounded text-xs font-medium transition-colors ${
-                              isBooked
-                                ? 'bg-red-500 hover:bg-red-600 text-white'
-                                : classAtTime.spotsLeft === 0
-                                ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                                : 'bg-blue-500 hover:bg-blue-600 text-white'
-                            }`}
-                          >
-                            {loading ? '...' : 
-                              isBooked ? 'Cancel' : 
-                              classAtTime.spotsLeft === 0 ? 'Full' : 'Book'
-                            }
-                          </button>
-                        )}
 
                         {/* Hover details popup */}
                         {hoveredClass === classAtTime.id && (
-                          <div className="absolute z-10 left-0 right-0 top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs">
-                            <div className="space-y-1 mb-2">
+                          <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-xs min-w-[200px]">
+                            <div className="space-y-1 mb-3">
+                              <div><span className="font-semibold">Class:</span> {classAtTime.name}</div>
+                              <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
                               <div><span className="font-semibold">Level:</span> {classAtTime.level}</div>
                               <div><span className="font-semibold">Duration:</span> {classAtTime.duration} minutes</div>
                               <div><span className="font-semibold">Available:</span> {classAtTime.spotsLeft} out of {classAtTime.maxSpots}</div>
-                              <div><span className="font-semibold">Instructor:</span> {classAtTime.instructor}</div>
                             </div>
+                            
+                            {user && (
+                              <button
+                                onClick={() => isBooked ? handleCancelBooking(classAtTime.id) : handleBookClass(classAtTime.id)}
+                                disabled={loading || (!isBooked && classAtTime.spotsLeft === 0)}
+                                className={`w-full py-1 px-2 rounded text-xs font-medium transition-colors ${
+                                  isBooked
+                                    ? 'bg-red-500 hover:bg-red-600 text-white'
+                                    : classAtTime.spotsLeft === 0
+                                    ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                }`}
+                              >
+                                {loading ? 'Processing...' : 
+                                  isBooked ? 'Cancel Booking' : 
+                                  classAtTime.spotsLeft === 0 ? 'Class Full' : 'Book Class'
+                                }
+                              </button>
+                            )}
                             
                             {!user && (
                               <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
