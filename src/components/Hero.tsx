@@ -46,6 +46,12 @@ const Hero: React.FC = () => {
             >
               Join Now
             </a>
+            <a 
+              href="/hall-hire" 
+              className="bg-accent-400 hover:bg-accent-500 text-white px-8 py-3 rounded-full font-medium transition-colors inline-flex items-center justify-center"
+            >
+              Hall Hire
+            </a>
           </div>
         </div>
       </div>

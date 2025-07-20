@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
 import { forceUpdateClasses } from '../utils/forceUpdateClasses';
+import HallHireSchedule from './HallHireSchedule';
 
 const Timetable: React.FC = () => {
   const { classes, userBookings, bookClass, cancelBooking, loading: contextLoading, error: contextError } = useBooking();
@@ -302,6 +303,9 @@ const Timetable: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Hall Hire Schedule */}
+      <HallHireSchedule />
     </div>
   );
 };

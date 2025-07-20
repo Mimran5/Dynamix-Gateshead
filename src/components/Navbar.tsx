@@ -76,6 +76,7 @@ const Navbar: React.FC = () => {
                 <Link to="/timetable" className="text-gray-700 hover:text-primary-700 transition-colors">Timetable</Link>
                 <Link to="/instructors" className="text-gray-700 hover:text-primary-700 transition-colors">Instructors</Link>
                 <Link to="/membership" className="text-gray-700 hover:text-primary-700 transition-colors">Membership</Link>
+                <Link to="/hall-hire" className="text-gray-700 hover:text-primary-700 transition-colors">Hall Hire</Link>
               </>
             )}
             
@@ -202,6 +203,13 @@ const Navbar: React.FC = () => {
                   onClick={toggleMenu}
                 >
                   Membership
+                </Link>
+                <Link
+                  to="/hall-hire"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-700 hover:bg-gray-50"
+                  onClick={toggleMenu}
+                >
+                  Hall Hire
                 </Link>
               </>
             ) : (

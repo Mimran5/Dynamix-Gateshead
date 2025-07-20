@@ -15,6 +15,8 @@ import MemberAuth from './components/MemberAuth';
 import MemberDashboard from './components/MemberDashboard';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
+import HallHire from './components/HallHire';
+import HallHirePreview from './components/HallHirePreview';
 import { useAuth } from './context/AuthContext';
 import ResetPassword from './components/ResetPassword';
 import './App.css';
@@ -61,6 +63,7 @@ const App: React.FC = () => {
                     <Timetable />
                     <Instructors />
                     <Membership />
+                    <HallHirePreview />
                     <NewsUpdates />
                     <Newsletter />
                   </>
@@ -69,6 +72,7 @@ const App: React.FC = () => {
                 <Route path="/timetable" element={<Timetable />} />
                 <Route path="/instructors" element={<Instructors />} />
                 <Route path="/membership" element={<Membership />} />
+                <Route path="/hall-hire" element={<HallHire />} />
                 <Route path="/cart" element={<Cart onClose={() => {}} />} />
                 <Route path="/checkout" element={<Checkout />} />
 
