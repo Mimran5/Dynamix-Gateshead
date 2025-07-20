@@ -1,24 +1,23 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface HallHireBooking {
-  packageId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   eventDate: string;
   startTime: string;
   endTime: string;
+  duration: number; // in hours
   expectedAttendees: number;
   eventType: string;
   specialRequirements?: string;
   totalPrice: number;
 }
 
-export interface HallHirePackage {
+export interface HallHireRate {
   id: string;
   name: string;
-  price: number;
-  duration: string;
+  pricePerHour: number;
   capacity: number;
 }
 
@@ -30,19 +29,19 @@ export interface BookingResponse {
 }
 
 export const hallHireService = {
-  // Get all hall hire packages
-  async getPackages(): Promise<HallHirePackage[]> {
+  // Get hall hire rate
+  async getRate(): Promise<HallHireRate> {
     try {
-      const response = await fetch(`${API_BASE_URL}/hall-hire/packages`);
+      const response = await fetch(`${API_BASE_URL}/hall-hire/rate`);
       const data = await response.json();
       
       if (data.success) {
-        return data.packages;
+        return data.rate;
       } else {
-        throw new Error(data.error || 'Failed to fetch packages');
+        throw new Error(data.error || 'Failed to fetch rate');
       }
     } catch (error) {
-      console.error('Error fetching hall hire packages:', error);
+      console.error('Error fetching hall hire rate:', error);
       throw error;
     }
   },

@@ -12,7 +12,7 @@ const HallHirePreview: React.FC = () => {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Perfect venue for your events, workshops, parties, and special occasions. 
-            From hourly rates to full weekend packages.
+            Simple hourly pricing - book only what you need.
           </p>
         </div>
 
@@ -37,31 +37,38 @@ const HallHirePreview: React.FC = () => {
             <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-primary-700" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Simple Setup</h3>
-            <p className="text-gray-600">Chairs and tables included with kitchen access</p>
+            <h3 className="text-xl font-semibold mb-2">Simple Pricing</h3>
+            <p className="text-gray-600">£25 per hour - book only what you need</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="grid md:grid-cols-2 gap-6 items-center">
             <div>
-              <h3 className="text-2xl font-bold mb-4">Hall Hire Packages</h3>
+              <h3 className="text-2xl font-bold mb-4">Simple Hourly Pricing</h3>
+              <div className="bg-primary-50 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary-700 mb-2">£25</div>
+                  <div className="text-lg text-gray-600">per hour</div>
+                  <div className="text-sm text-gray-500 mt-2">Up to 30 people</div>
+                </div>
+              </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Hourly Rate: £25 per hour (up to 30 people)</span>
+                  <span>Chairs and tables included</span>
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Half Day: £120 (4 hours, up to 30 people)</span>
+                  <span>Kitchen access available</span>
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Full Day: £200 (8 hours, up to 30 people)</span>
+                  <span>Flexible booking times</span>
                 </li>
                 <li className="flex items-center">
                   <span className="text-primary-700 font-semibold mr-3">•</span>
-                  <span>Weekend Special: £350 (full weekend access, up to 30 people)</span>
+                  <span>Changing facilities</span>
                 </li>
               </ul>
               <p className="text-gray-600 mb-6">
@@ -84,7 +91,7 @@ const HallHirePreview: React.FC = () => {
                 to="/hall-hire"
                 className="inline-flex items-center bg-primary-700 text-white px-6 py-3 rounded-md hover:bg-primary-800 transition-colors font-semibold"
               >
-                View All Packages
+                Book Now - £25/hour
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </div>

@@ -1,12 +1,12 @@
 export interface HallHireBooking {
   id: string;
-  packageId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   eventDate: string;
   startTime: string;
   endTime: string;
+  duration: number; // in hours
   expectedAttendees: number;
   eventType: string;
   specialRequirements?: string;

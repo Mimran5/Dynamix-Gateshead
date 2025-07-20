@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, MapPin, Check, Star, Phone, Mail } from 'lucide-react';
-import { hallHirePackages, HallHirePackage } from '../data/hallHire';
+import { Calendar, Clock, Users, MapPin, Check, Phone, Mail } from 'lucide-react';
+import { hallHireRate, HallHireRate } from '../data/hallHire';
 import HallBookingForm from './HallBookingForm';
 
 const HallHire: React.FC = () => {
-  const [selectedPackage, setSelectedPackage] = useState<HallHirePackage | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
 
-  const handleBookNow = (pkg: HallHirePackage) => {
-    setSelectedPackage(pkg);
+  const handleBookNow = () => {
     setShowBookingForm(true);
   };
 
   const handleCloseBookingForm = () => {
     setShowBookingForm(false);
-    setSelectedPackage(null);
   };
 
   return (
@@ -34,13 +31,13 @@ const HallHire: React.FC = () => {
                 <MapPin className="w-5 h-5 mr-2" />
                 <span>Central Gateshead Location</span>
               </div>
-                          <div className="flex items-center">
-              <Users className="w-5 h-5 mr-2" />
-              <span>Up to 30 People</span>
-            </div>
+              <div className="flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                <span>Up to 30 People</span>
+              </div>
               <div className="flex items-center">
                 <Clock className="w-5 h-5 mr-2" />
-                <span>Flexible Booking Times</span>
+                <span>£25 per Hour</span>
               </div>
             </div>
           </div>
@@ -64,69 +61,51 @@ const HallHire: React.FC = () => {
             <h3 className="text-xl font-semibold mb-2">Perfect Size</h3>
             <p className="text-gray-600">Ideal venue for events up to 30 people with chairs and tables included</p>
           </div>
-                      <div className="text-center">
-              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-primary-700" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Simple Setup</h3>
-              <p className="text-gray-600">Chairs and tables included, kitchen access, and flexible booking times</p>
+          <div className="text-center">
+            <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-primary-700" />
             </div>
+            <h3 className="text-xl font-semibold mb-2">Simple Pricing</h3>
+            <p className="text-gray-600">£25 per hour - book only what you need with flexible booking times</p>
+          </div>
         </div>
 
-        {/* Packages Section */}
+        {/* Pricing Section */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center mb-8">Hall Hire Packages</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {hallHirePackages.map((pkg) => (
-              <div
-                key={pkg.id}
-                className={`bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 ${
-                  pkg.isPopular ? 'ring-2 ring-primary-500' : ''
-                }`}
-              >
-                {pkg.isPopular && (
-                  <div className="bg-primary-500 text-white text-center py-2 text-sm font-semibold">
-                    <Star className="w-4 h-4 inline mr-1" />
-                    Most Popular
-                  </div>
-                )}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
-                  <p className="text-gray-600 mb-4">{pkg.description}</p>
-                  
-                  <div className="text-3xl font-bold text-primary-700 mb-2">
-                    £{pkg.price}
-                    <span className="text-sm text-gray-500 font-normal">/{pkg.duration}</span>
-                  </div>
-                  {pkg.id === 'hourly' && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      £25 per hour
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center text-sm text-gray-600 mb-4">
-                    <Users className="w-4 h-4 mr-1" />
-                    Up to {pkg.capacity} people
-                  </div>
-
-                  <ul className="space-y-2 mb-6">
-                    {pkg.features.slice(0, 3).map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handleBookNow(pkg)}
-                    className="w-full bg-primary-700 text-white py-2 px-4 rounded-md hover:bg-primary-800 transition-colors font-semibold"
-                  >
-                    Book Now
-                  </button>
+          <h2 className="text-3xl font-bold text-center mb-8">Simple Hourly Pricing</h2>
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="p-8 text-center">
+                <h3 className="text-2xl font-bold mb-4">{hallHireRate.name}</h3>
+                <p className="text-gray-600 mb-6">{hallHireRate.description}</p>
+                
+                <div className="text-4xl font-bold text-primary-700 mb-2">
+                  £{hallHireRate.pricePerHour}
+                  <span className="text-lg text-gray-500 font-normal"> per hour</span>
                 </div>
+                
+                <div className="flex items-center justify-center text-sm text-gray-600 mb-6">
+                  <Users className="w-4 h-4 mr-1" />
+                  Up to {hallHireRate.capacity} people
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 mb-8 text-left">
+                  {hallHireRate.features.slice(0, 6).map((feature, index) => (
+                    <div key={index} className="flex items-start">
+                      <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleBookNow}
+                  className="w-full bg-primary-700 text-white py-3 px-6 rounded-md hover:bg-primary-800 transition-colors font-semibold text-lg"
+                >
+                  Book Now - £25/hour
+                </button>
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -136,7 +115,7 @@ const HallHire: React.FC = () => {
           <div>
             <h3 className="text-2xl font-bold mb-6">What's Included</h3>
             <div className="space-y-4">
-              {hallHirePackages[1].includes.map((item, index) => (
+              {hallHireRate.includes.map((item, index) => (
                 <div key={index} className="flex items-start">
                   <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                   <span>{item}</span>
@@ -149,7 +128,7 @@ const HallHire: React.FC = () => {
           <div>
             <h3 className="text-2xl font-bold mb-6">Available Times</h3>
             <div className="space-y-3">
-              {hallHirePackages[0].availableTimes.map((time, index) => (
+              {hallHireRate.availableTimes.map((time, index) => (
                 <div key={index} className="flex items-center">
                   <Clock className="w-4 h-4 text-primary-700 mr-3" />
                   <span>{time}</span>
@@ -166,7 +145,7 @@ const HallHire: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-red-600">Restrictions</h4>
               <ul className="space-y-2">
-                {hallHirePackages[0].restrictions.map((restriction, index) => (
+                {hallHireRate.restrictions.map((restriction, index) => (
                   <li key={index} className="flex items-start">
                     <span className="text-red-500 mr-2">•</span>
                     <span className="text-sm">{restriction}</span>
@@ -204,10 +183,10 @@ const HallHire: React.FC = () => {
       </div>
 
       {/* Booking Form Modal */}
-      {showBookingForm && selectedPackage && (
+      {showBookingForm && (
         <HallBookingForm
-          selectedPackage={selectedPackage}
           onClose={handleCloseBookingForm}
+          hallHireRate={hallHireRate}
         />
       )}
     </div>

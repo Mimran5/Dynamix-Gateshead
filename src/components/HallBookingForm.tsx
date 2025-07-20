@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, Users, Mail, Phone, User, FileText, AlertTriangle } from 'lucide-react';
-import { HallHirePackage } from '../data/hallHire';
+import { HallHireRate } from '../data/hallHire';
 import { hallHireService } from '../services/hallHireService';
 import { hallHireBookingService } from '../data/hallHireBookings';
 
 interface HallBookingFormProps {
-  selectedPackage: HallHirePackage;
+  hallHireRate: HallHireRate;
   onClose: () => void;
 }
 
-const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onClose }) => {
+const HallBookingForm: React.FC<HallBookingFormProps> = ({ hallHireRate, onClose }) => {
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -57,13 +57,23 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
   }, [formData.eventDate, formData.startTime, formData.endTime]);
 
   const calculateTotalPrice = () => {
-    if (selectedPackage.id === 'hourly') {
+    if (formData.startTime && formData.endTime) {
       const start = new Date(`2000-01-01T${formData.startTime}`);
       const end = new Date(`2000-01-01T${formData.endTime}`);
       const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-      return Math.ceil(hours) * selectedPackage.price;
+      return Math.ceil(hours) * hallHireRate.pricePerHour;
     }
-    return selectedPackage.price;
+    return 0;
+  };
+
+  const calculateDuration = () => {
+    if (formData.startTime && formData.endTime) {
+      const start = new Date(`2000-01-01T${formData.startTime}`);
+      const end = new Date(`2000-01-01T${formData.endTime}`);
+      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return Math.ceil(hours);
+    }
+    return 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,14 +81,15 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
     setIsSubmitting(true);
 
     try {
+      const duration = calculateDuration();
       const bookingData = {
-        packageId: selectedPackage.id,
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
         eventDate: formData.eventDate,
         startTime: formData.startTime,
         endTime: formData.endTime,
+        duration: duration,
         expectedAttendees: parseInt(formData.expectedAttendees),
         eventType: formData.eventType,
         specialRequirements: formData.specialRequirements,
@@ -161,7 +172,7 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
         <div className="flex justify-between items-center p-6 border-b">
           <div>
             <h2 className="text-2xl font-bold">Book Hall Hire</h2>
-            <p className="text-gray-600">{selectedPackage.name}</p>
+            <p className="text-gray-600">{hallHireRate.name}</p>
           </div>
           <button
             onClick={onClose}
@@ -171,19 +182,19 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
           </button>
         </div>
 
-        {/* Package Summary */}
+        {/* Rate Summary */}
         <div className="p-6 bg-gray-50 border-b">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">{selectedPackage.name}</h3>
-              <p className="text-sm text-gray-600">{selectedPackage.description}</p>
+              <h3 className="font-semibold">{hallHireRate.name}</h3>
+              <p className="text-sm text-gray-600">{hallHireRate.description}</p>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-primary-700">
                 £{calculateTotalPrice()}
               </div>
               <div className="text-sm text-gray-500">
-                {selectedPackage.duration}
+                {calculateDuration()} hour{calculateDuration() !== 1 ? 's' : ''} × £{hallHireRate.pricePerHour}/hour
               </div>
             </div>
           </div>
@@ -286,21 +297,21 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
             </div>
           </div>
 
-                     {/* Time and Capacity */}
-           <div>
-             <h3 className="text-lg font-semibold mb-4 flex items-center">
-               <Clock className="w-5 h-5 mr-2" />
-               Time & Capacity
-             </h3>
-             
-             {availabilityError && (
-               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                 <div className="flex items-center">
-                   <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
-                   <span className="text-red-700 text-sm">{availabilityError}</span>
-                 </div>
-               </div>
-             )}
+          {/* Time and Capacity */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Clock className="w-5 h-5 mr-2" />
+              Time & Capacity
+            </h3>
+            
+            {availabilityError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-center">
+                  <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
+                  <span className="text-red-700 text-sm">{availabilityError}</span>
+                </div>
+              </div>
+            )}
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -338,12 +349,12 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
                   value={formData.expectedAttendees}
                   onChange={handleInputChange}
                   min="1"
-                  max={selectedPackage.capacity}
+                  max={hallHireRate.capacity}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Max: {selectedPackage.capacity} people
+                  Max: {hallHireRate.capacity} people
                 </p>
               </div>
             </div>
@@ -369,7 +380,7 @@ const HallBookingForm: React.FC<HallBookingFormProps> = ({ selectedPackage, onCl
           <div className="bg-gray-50 p-4 rounded-md">
             <h4 className="font-semibold mb-2">Important Information</h4>
             <ul className="text-sm text-gray-600 space-y-1">
-              {selectedPackage.restrictions.map((restriction, index) => (
+              {hallHireRate.restrictions.map((restriction, index) => (
                 <li key={index}>• {restriction}</li>
               ))}
               <li>• A security deposit may be required for certain events</li>
