@@ -143,7 +143,22 @@ const Timetable: React.FC = () => {
   const getAllStartTimes = () => {
     const allTimes = new Set<string>();
     sortedClasses.forEach(c => allTimes.add(c.time));
-    return Array.from(allTimes).sort();
+    
+    // Add time slots up to 22:30
+    const timeSlots = [];
+    let currentTime = '09:00'; // Start from 9 AM
+    
+    while (currentTime <= '22:30') {
+      timeSlots.push(currentTime);
+      // Add 15 minutes
+      const [hours, minutes] = currentTime.split(':').map(Number);
+      const totalMinutes = hours * 60 + minutes + 15;
+      const newHours = Math.floor(totalMinutes / 60);
+      const newMinutes = totalMinutes % 60;
+      currentTime = `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+    }
+    
+    return timeSlots;
   };
 
   // Check if a class starts at a specific time
