@@ -47,16 +47,18 @@ const Navbar: React.FC = () => {
   const isAuth = location.pathname === '/member';
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'}`}>
+    <nav className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
+      isScrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm shadow-sm'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo and Brand */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
               <img 
                 src={logo} 
                 alt="Dynamix" 
-                className="h-32 md:h-40 w-auto object-contain"
+                className="h-16 md:h-20 w-auto object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -71,12 +73,12 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-8">
             {!isDashboard && (
               <>
-                <Link to="/" className="text-gray-700 hover:text-primary-700 transition-colors">Home</Link>
-                <Link to="/classes" className="text-gray-700 hover:text-primary-700 transition-colors">Classes</Link>
-                <Link to="/timetable" className="text-gray-700 hover:text-primary-700 transition-colors">Timetable</Link>
-                <Link to="/instructors" className="text-gray-700 hover:text-primary-700 transition-colors">Instructors</Link>
-                <Link to="/membership" className="text-gray-700 hover:text-primary-700 transition-colors">Membership</Link>
-                <Link to="/hall-hire" className="text-gray-700 hover:text-primary-700 transition-colors">Hall Hire</Link>
+                <Link to="/" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Home</Link>
+                <Link to="/classes" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Classes</Link>
+                <Link to="/timetable" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Timetable</Link>
+                <Link to="/instructors" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Instructors</Link>
+                <Link to="/membership" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Membership</Link>
+                <Link to="/hall-hire" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Hall Hire</Link>
               </>
             )}
             
@@ -84,9 +86,9 @@ const Navbar: React.FC = () => {
             {isDashboard && (
               <>
                 <Link to="/dashboard" className="text-primary-700 font-medium">My Portal</Link>
-                <Link to="/dashboard/membership" className="text-gray-700 hover:text-primary-700 transition-colors">Membership</Link>
-                <Link to="/dashboard/schedule" className="text-gray-700 hover:text-primary-700 transition-colors">Class Schedule</Link>
-                <Link to="/dashboard/notifications" className="text-gray-700 hover:text-primary-700 transition-colors">Notifications</Link>
+                <Link to="/dashboard/membership" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Membership</Link>
+                <Link to="/dashboard/schedule" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Class Schedule</Link>
+                <Link to="/dashboard/notifications" className="text-gray-700 hover:text-primary-700 transition-colors font-medium">Notifications</Link>
               </>
             )}
 
@@ -96,7 +98,7 @@ const Navbar: React.FC = () => {
                 {!isDashboard && (
                   <Link
                     to="/dashboard"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800 transition-colors"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Member Portal
@@ -104,7 +106,7 @@ const Navbar: React.FC = () => {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-gray-700 hover:text-primary-700 transition-colors"
+                  className="text-gray-700 hover:text-primary-700 transition-colors font-medium"
                 >
                   Logout
                 </button>
@@ -114,7 +116,7 @@ const Navbar: React.FC = () => {
                 {!isAuth && (
                   <Link
                     to="/member"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-700 hover:bg-primary-800 transition-colors"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Member Login
@@ -165,7 +167,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden">
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {!isDashboard ? (
               <>
