@@ -88,26 +88,24 @@ const Timetable: React.FC = () => {
     }
   };
 
-  // Color coding for timetable blocks
+  // Vibrant color coding for timetable blocks
   const getTimetableBlockColor = (type: string, isStart: boolean) => {
     const baseColors = {
-      'gymnastics': 'bg-purple-50 border-purple-200 hover:bg-purple-100',
-      'kickboxing': 'bg-red-50 border-red-200 hover:bg-red-100',
-      'yoga': 'bg-green-50 border-green-200 hover:bg-green-100',
-      'pilates': 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-      'aerobics': 'bg-orange-50 border-orange-200 hover:bg-orange-100',
-      'karate': 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
-      'zumba': 'bg-pink-50 border-pink-200 hover:bg-pink-100',
-      'default': 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+      'gymnastics': 'bg-purple-500 border-purple-700 hover:bg-purple-600 text-white',
+      'kickboxing': 'bg-red-500 border-red-700 hover:bg-red-600 text-white',
+      'yoga': 'bg-green-500 border-green-700 hover:bg-green-600 text-white',
+      'pilates': 'bg-blue-500 border-blue-700 hover:bg-blue-600 text-white',
+      'aerobics': 'bg-orange-500 border-orange-700 hover:bg-orange-600 text-white',
+      'karate': 'bg-yellow-400 border-yellow-600 hover:bg-yellow-500 text-gray-900',
+      'zumba': 'bg-pink-500 border-pink-700 hover:bg-pink-600 text-white',
+      'default': 'bg-gray-400 border-gray-600 hover:bg-gray-500 text-white'
     };
-
     const color = baseColors[type.toLowerCase() as keyof typeof baseColors] || baseColors.default;
-    
     if (isStart) {
-      return color;
+      return color + ' shadow-md';
     } else {
-      // For running time slots, use a lighter version
-      return color.replace('bg-', 'bg-').replace('hover:bg-', 'hover:bg-').replace('-50', '-25').replace('-100', '-75');
+      // For running time slots, use a slightly lighter version
+      return color.replace('-500', '-400').replace('-700', '-500').replace('-600', '-400');
     }
   };
 
@@ -141,13 +139,9 @@ const Timetable: React.FC = () => {
 
   // Get all unique start times
   const getAllStartTimes = () => {
-    const allTimes = new Set<string>();
-    sortedClasses.forEach(c => allTimes.add(c.time));
-    
-    // Add time slots up to 22:30
+    // Add time slots from 16:00 to 22:30
     const timeSlots = [];
-    let currentTime = '09:00'; // Start from 9 AM
-    
+    let currentTime = '16:00'; // Start from 4 PM
     while (currentTime <= '22:30') {
       timeSlots.push(currentTime);
       // Add 15 minutes
@@ -157,7 +151,6 @@ const Timetable: React.FC = () => {
       const newMinutes = totalMinutes % 60;
       currentTime = `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
     }
-    
     return timeSlots;
   };
 
@@ -294,7 +287,7 @@ const Timetable: React.FC = () => {
                     >
                       {/* Only show class name at the start of the class */}
                       {isClassStart && (
-                        <div className="text-xs font-medium text-gray-800 text-center leading-tight">
+                        <div className="text-sm font-bold text-white text-center leading-tight drop-shadow">
                           {classRunningAtTime.name.split(' ').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
