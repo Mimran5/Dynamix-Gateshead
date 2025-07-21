@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": "dist",
+  "outputDirectory": "project/dist",
   "framework": "vite",
   "rewrites": [
     {
@@ -15,7 +15,7 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "project/dist"
       }
     }
   ]
